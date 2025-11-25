@@ -1,0 +1,252 @@
+<!-- File: app/templates/errors/403.html -->
+{% extends "base.html" %}
+{% block title %}Access Forbidden - 403{% endblock %}
+
+{% block extra_head %}
+<style>
+  .error-container {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .error-content {
+    text-align: center;
+    max-width: 700px;
+  }
+  .error-code {
+    font-size: 8rem;
+    font-weight: bold;
+    color: #ffc107;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 1rem;
+    animation: shake 1s infinite;
+  }
+  .error-title {
+    font-size: 2.5rem;
+    color: #343a40;
+    margin-bottom: 1rem;
+  }
+  .error-message {
+    font-size: 1.2rem;
+    color: #6c757d;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+  }
+  .permission-info {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    text-align: left;
+  }
+  .role-info {
+    background: #e3f2fd;
+    border: 1px solid #bbdefb;
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+  .lock-icon {
+    font-size: 4rem;
+    color: #ffc107;
+    margin-bottom: 1rem;
+    animation: pulse 2s infinite;
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+  .action-buttons {
+    margin-top: 2rem;
+  }
+  .action-buttons .btn {
+    margin: 0.25rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="error-container">
+  <div class="error-content">
+    <div class="lock-icon">
+      <i class="fas fa-lock"></i>
+    </div>
+    <div class="error-code">403</div>
+    <h1 class="error-title">Access Forbidden</h1>
+    <p class="error-message">
+      Sorry, you don't have permission to access this resource. 
+      Your current role may not have the required privileges for this action.
+    </p>
+
+    <!-- Permission Information -->
+    <div class="permission-info">
+      <h5><i class="fas fa-info-circle me-2"></i>Permission Details</h5>
+      <p class="mb-2">
+        <strong>Your Current Role:</strong> 
+        {% if current_user.is_authenticated %}
+          <span class="badge bg-primary">{{ current_user.role }}</span>
+        {% else %}
+          <span class="badge bg-secondary">Not Logged In</span>
+        {% endif %}
+      </p>
+      <p class="mb-0">
+        <strong>Required Access:</strong> This page requires specific permissions that your account doesn't currently have.
+      </p>
+    </div>
+
+    <!-- Role-based Information -->
+    {% if current_user.is_authenticated %}
+      <div class="role-info">
+        <h6><i class="fas fa-user-tag me-2"></i>Role-based Access</h6>
+        {% if current_user.role == 'Student' %}
+          <p class="mb-0">
+            <small>
+              <strong>Students can access:</strong> Dashboard, Club browsing, Event viewing, Membership payments, Profile management
+            </small>
+          </p>
+        {% elif current_user.role == 'ClubLeader' %}
+          <p class="mb-0">
+            <small>
+              <strong>Club Leaders can access:</strong> Student features + Event creation, Club management, Member management
+            </small>
+          </p>
+        {% elif current_user.role == 'Admin' %}
+          <p class="mb-0">
+            <small>
+              <strong>Admins can access:</strong> All features + User management, Club approval, System administration
+            </small>
+          </p>
+        {% endif %}
+      </div>
+    {% else %}
+      <div class="role-info">
+        <h6><i class="fas fa-sign-in-alt me-2"></i>Authentication Required</h6>
+        <p class="mb-0">
+          <small>You need to be logged in to access this page. Please sign in with your account.</small>
+        </p>
+      </div>
+    {% endif %}
+
+    <!-- Possible Solutions -->
+    <div class="mt-4">
+      <h5>What you can do:</h5>
+      <ul class="list-unstyled text-start">
+        {% if not current_user.is_authenticated %}
+          <li class="mb-2">
+            <i class="fas fa-arrow-right text-primary me-2"></i>
+            <strong>Login:</strong> Sign in with your account to access more features
+          </li>
+          <li class="mb-2">
+            <i class="fas fa-arrow-right text-success me-2"></i>
+            <strong>Register:</strong> Create a new account if you don't have one
+          </li>
+        {% else %}
+          <li class="mb-2">
+            <i class="fas fa-arrow-right text-info me-2"></i>
+            <strong>Contact Admin:</strong> Request access if you believe you should have permission
+          </li>
+          <li class="mb-2">
+            <i class="fas fa-arrow-right text-warning me-2"></i>
+            <strong>Role Change:</strong> Contact support to discuss role upgrades
+          </li>
+        {% endif %}
+        <li class="mb-2">
+          <i class="fas fa-arrow-right text-secondary me-2"></i>
+          <strong>Go Back:</strong> Return to a page you have access to
+        </li>
+      </ul>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      {% if not current_user.is_authenticated %}
+        <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg">
+          <i class="fas fa-sign-in-alt me-2"></i>
+          Login
+        </a>
+        <a href="{{ url_for('auth.register') }}" class="btn btn-success btn-lg">
+          <i class="fas fa-user-plus me-2"></i>
+          Register
+        </a>
+      {% else %}
+        <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-primary btn-lg">
+          <i class="fas fa-tachometer-alt me-2"></i>
+          My Dashboard
+        </a>
+        <a href="mailto:admin@clubms.com?subject=Access Request&body=I need access to a restricted page. My role: {{ current_user.role }}" 
+           class="btn btn-warning btn-lg">
+          <i class="fas fa-envelope me-2"></i>
+          Request Access
+        </a>
+      {% endif %}
+      
+      <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary btn-lg">
+        <i class="fas fa-home me-2"></i>
+        Home Page
+      </a>
+      
+      <button onclick="goBack()" class="btn btn-outline-info btn-lg">
+        <i class="fas fa-arrow-left me-2"></i>
+        Go Back
+      </button>
+    </div>
+
+    <!-- Help Information -->
+    <div class="mt-4 pt-3 border-top">
+      <h6 class="text-muted">Need Help?</h6>
+      <p class="text-muted small">
+        If you believe this is an error or you should have access to this page, 
+        please contact our support team at 
+        <a href="mailto:support@clubms.com" class="text-decoration-none">
+          support@clubms.com
+        </a>
+        or call +254 114 742 348.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function goBack() {
+  if (window.history.length > 1) {
+    window.history.back();
+  } else {
+    window.location.href = "{{ url_for('main.index') }}";
+  }
+}
+
+// Add interactive elements
+document.addEventListener('DOMContentLoaded', function() {
+  // Add hover effects to buttons
+  const buttons = document.querySelectorAll('.btn');
+  buttons.forEach(button => {
+    button.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-2px)';
+      this.style.transition = 'transform 0.2s ease';
+    });
+    
+    button.addEventListener('mouseleave', function() {
+      this.style.transform = 'translateY(0)';
+    });
+  });
+
+  // Add click effect to lock icon
+  const lockIcon = document.querySelector('.lock-icon i');
+  lockIcon.addEventListener('click', function() {
+    this.style.animation = 'shake 0.5s';
+    setTimeout(() => {
+      this.style.animation = 'pulse 2s infinite';
+    }, 500);
+  });
+});
+</script>
+{% endblock %}

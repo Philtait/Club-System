@@ -1,0 +1,865 @@
+<!-- File: app/templates/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
+    <title>{% block title %}Club Management System{% endblock %}</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+
+    <!-- Favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon" />
+
+    <!-- Toast Notification Styles -->
+    <style>
+      .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        max-width: 400px;
+      }
+      
+      .custom-toast {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(10px);
+        margin-bottom: 12px;
+        overflow: hidden;
+        animation: slideInRight 0.3s ease-out;
+      }
+      
+      @keyframes slideInRight {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      
+      .custom-toast.hiding {
+        animation: slideOutRight 0.3s ease-in forwards;
+      }
+      
+      @keyframes slideOutRight {
+        to {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+      }
+      
+      .toast-success {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+      }
+      
+      .toast-error,
+      .toast-danger {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+      }
+      
+      .toast-warning {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+      }
+      
+      .toast-info {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+      }
+      
+      .toast-header {
+        background: rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        color: inherit;
+        padding: 12px 16px;
+      }
+      
+      .toast-body {
+        padding: 16px;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      
+      .toast-close {
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 18px;
+        opacity: 0.8;
+        transition: opacity 0.2s ease;
+      }
+      
+      .toast-close:hover {
+        opacity: 1;
+        color: white;
+      }
+      
+      .toast-icon {
+        width: 20px;
+        height: 20px;
+        margin-right: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .toast-progress {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 3px;
+        background: rgba(255, 255, 255, 0.3);
+        animation: progress 5s linear forwards;
+      }
+      
+      @keyframes progress {
+        from { width: 100%; }
+        to { width: 0%; }
+      }
+      
+      /* Mobile responsiveness */
+      @media (max-width: 576px) {
+        .toast-container {
+          top: 10px;
+          right: 10px;
+          left: 10px;
+          max-width: none;
+        }
+        
+        .custom-toast {
+          margin-bottom: 8px;
+        }
+        
+        .toast-body {
+          font-size: 13px;
+          padding: 12px;
+        }
+        
+        .toast-header {
+          padding: 10px 12px;
+        }
+      }
+
+      /* Footer Styles */
+      .footer {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        color: #e2e8f0;
+        margin-top: 80px;
+      }
+
+      .footer-main {
+        padding: 60px 0 40px;
+        position: relative;
+      }
+
+      .footer-main::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, #475569, transparent);
+      }
+
+      .footer-brand .footer-description {
+        color: #94a3b8;
+        line-height: 1.6;
+        margin-bottom: 20px;
+        font-size: 14px;
+      }
+
+      .social-links {
+        display: flex;
+        gap: 12px;
+      }
+
+      .social-link {
+        width: 40px;
+        height: 40px;
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #3b82f6;
+        text-decoration: none;
+        transition: all 0.3s ease;
+      }
+
+      .social-link:hover {
+        background: #3b82f6;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+      }
+
+      .footer-title {
+        color: #f1f5f9;
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        position: relative;
+        padding-bottom: 8px;
+      }
+
+      .footer-title::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 30px;
+        height: 2px;
+        background: #3b82f6;
+        border-radius: 1px;
+      }
+
+      .footer-links {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .footer-links li {
+        margin-bottom: 8px;
+      }
+
+      .footer-links a {
+        color: #94a3b8;
+        text-decoration: none;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        display: inline-block;
+      }
+
+      .footer-links a:hover {
+        color: #3b82f6;
+        padding-left: 4px;
+      }
+
+      .contact-info {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .contact-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        font-size: 14px;
+      }
+
+      .contact-item i {
+        color: #3b82f6;
+        width: 16px;
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+
+      .contact-item span {
+        color: #94a3b8;
+        line-height: 1.4;
+      }
+
+      .footer-bottom {
+        background: rgba(0, 0, 0, 0.2);
+        padding: 20px 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .footer-bottom p {
+        color: #94a3b8;
+        font-size: 14px;
+      }
+
+      .footer-bottom-links {
+        text-align: right;
+        font-size: 14px;
+      }
+
+      .footer-bottom-links span {
+        color: #94a3b8;
+      }
+
+      .footer-bottom-links a {
+        color: #94a3b8;
+        text-decoration: none;
+        transition: color 0.2s ease;
+      }
+
+      .footer-bottom-links a:hover {
+        color: #3b82f6;
+      }
+
+      /* Footer Mobile Responsiveness */
+      @media (max-width: 768px) {
+        .footer-main {
+          padding: 40px 0 30px;
+        }
+
+        .footer-title {
+          font-size: 15px;
+          margin-bottom: 15px;
+        }
+
+        .footer-brand .footer-description {
+          font-size: 13px;
+        }
+
+        .social-links {
+          justify-content: flex-start;
+          margin-bottom: 20px;
+        }
+
+        .contact-item {
+          font-size: 13px;
+        }
+
+        .footer-bottom-links {
+          text-align: left;
+          margin-top: 10px;
+        }
+
+        .footer-bottom-links span {
+          display: block;
+          margin-bottom: 8px;
+        }
+      }
+
+      /* Modal Enhancements */
+      .modal-content {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+      }
+
+      .modal-header {
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        border-radius: 12px 12px 0 0;
+        padding: 20px 24px;
+      }
+
+      .modal-title {
+        font-weight: 600;
+        color: #1e293b;
+      }
+
+      .modal-body {
+        padding: 24px;
+      }
+
+      .contact-methods .fas {
+        width: 20px;
+      }
+    </style>
+
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+      <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.index') }}">
+          <img src="{{ url_for('static', filename='images/logo.png') }}"
+               alt="CMS Logo" height="40" class="me-2">
+          <span>Club Management System</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                                                     data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false"
+                                                                                                       aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="mainNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('main.index') }}">Home</a>
+            </li>
+
+            <!-- Clubs Dropdown -->
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button"
+                                                           data-bs-toggle="dropdown" aria-expanded="false">
+                Clubs
+              </a>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{{ url_for('clubs.list_clubs') }}">Browse Clubs</a></li>
+                {% if current_user.is_authenticated %}
+                {% if current_user.role in ['Student','ClubLeader'] %}
+                <li><a class="dropdown-item" href="{{ url_for('clubs.request_club') }}">Request Club</a></li>
+                {% endif %}
+                {% if current_user.role == 'Admin' %}
+                <li><a class="dropdown-item" href="{{ url_for('clubs.create_club') }}">Create Club</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('clubs.pending_clubs') }}">Approve Clubs</a></li>
+                {% endif %}
+                {% endif %}
+              </ul>
+            </li>
+
+            <!-- Events Dropdown -->
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button"
+                                                           data-bs-toggle="dropdown" aria-expanded="false">
+                Events
+              </a>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{{ url_for('events.list_events') }}">View Events</a></li>
+                {% if current_user.is_authenticated and current_user.role in ['Admin','ClubLeader'] %}
+                <li><a class="dropdown-item" href="{{ url_for('events.create_event') }}">Create Event</a></li>
+                {% endif %}
+              </ul>
+            </li>
+
+            <!-- Payments Dropdown for Students -->
+            {% if current_user.is_authenticated and current_user.role == 'Student' %}
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button"
+                                                           data-bs-toggle="dropdown" aria-expanded="false">
+                Payments
+              </a>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{{ url_for('payments.membership_payment') }}">Pay Membership</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('payments.history') }}">Payment History</a></li>
+              </ul>
+            </li>
+            {% endif %}
+
+            <!-- Admin Payments for Admins -->
+            {% if current_user.is_authenticated and current_user.role == 'Admin' %}
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button"
+                                                           data-bs-toggle="dropdown" aria-expanded="false">
+                Payments
+              </a>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{{ url_for('payments.admin_pending_payments') }}">Pending Payments</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('payments.admin_all_payments') }}">All Payments</a></li>
+              </ul>
+            </li>
+            {% endif %}
+
+          </ul>
+
+          <ul class="navbar-nav ms-auto">
+            {% if current_user.is_authenticated %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('notifications.inbox') }}">
+                <i class="fas fa-bell"></i> Notifications
+              </a>
+            </li>
+
+            <!-- User Dropdown -->
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button"
+                                                           data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-user-circle"></i> {{ current_user.first_name }}
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="{{ url_for('dashboard.dashboard') }}">Dashboard</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('profile.view_profile') }}">Profile</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
+              </ul>
+            </li>
+            {% else %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('auth.register') }}">Register</a>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Main Content -->
+    <main class="container mt-4">
+      {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer mt-auto">
+      <div class="footer-main">
+        <div class="container">
+          <div class="row">
+            <!-- Brand Section -->
+            <div class="col-lg-4 col-md-6 mb-4">
+              <div class="footer-brand">
+                <div class="d-flex align-items-center mb-3">
+                  <img src="{{ url_for('static', filename='images/logo.png') }}" alt="CMS Logo" height="35" class="me-2">
+                  <h5 class="mb-0 text-white">Club Management System</h5>
+                </div>
+                <p class="footer-description">
+                  Empowering student communities at Strathmore University through seamless club management, 
+                  event coordination, and meaningful connections that shape the future.
+                </p>
+                <div class="social-links">
+                  <a href="#" class="social-link" aria-label="Facebook">
+                    <i class="fab fa-facebook-f"></i>
+                  </a>
+                  <a href="#" class="social-link" aria-label="Twitter">
+                    <i class="fab fa-twitter"></i>
+                  </a>
+                  <a href="#" class="social-link" aria-label="Instagram">
+                    <i class="fab fa-instagram"></i>
+                  </a>
+                  <a href="#" class="social-link" aria-label="LinkedIn">
+                    <i class="fab fa-linkedin-in"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="col-lg-2 col-md-6 mb-4">
+              <h6 class="footer-title">Platform</h6>
+              <ul class="footer-links">
+                <li><a href="{{ url_for('main.index') }}">Home</a></li>
+                <li><a href="{{ url_for('clubs.list_clubs') }}">Browse Clubs</a></li>
+                <li><a href="{{ url_for('events.list_events') }}">Events</a></li>
+                {% if current_user.is_authenticated %}
+                  <li><a href="{{ url_for('dashboard.dashboard') }}">Dashboard</a></li>
+                {% else %}
+                  <li><a href="{{ url_for('auth.register') }}">Join Now</a></li>
+                {% endif %}
+              </ul>
+            </div>
+
+            <!-- Student Resources -->
+            <div class="col-lg-2 col-md-6 mb-4">
+              <h6 class="footer-title">For Students</h6>
+              <ul class="footer-links">
+                {% if current_user.is_authenticated and current_user.role == 'Student' %}
+                  <li><a href="{{ url_for('payments.membership_payment') }}">Pay Membership</a></li>
+                  <li><a href="{{ url_for('payments.history') }}">Payment History</a></li>
+                  <li><a href="{{ url_for('feedback.list_feedback') }}">My Feedback</a></li>
+                {% else %}
+                  <li><a href="{{ url_for('clubs.list_clubs') }}">Find Clubs</a></li>
+                  <li><a href="{{ url_for('events.list_events') }}">Upcoming Events</a></li>
+                  <li><a href="{{ url_for('auth.register') }}">Create Account</a></li>
+                {% endif %}
+                <li><a href="#" data-bs-toggle="modal" data-bs-target="#helpModal">Student Guide</a></li>
+              </ul>
+            </div>
+
+            <!-- Support & Legal -->
+            <div class="col-lg-2 col-md-6 mb-4">
+              <h6 class="footer-title">Support</h6>
+              <ul class="footer-links">
+                <li><a href="#" data-bs-toggle="modal" data-bs-target="#helpModal">Help Center</a></li>
+                <li><a href="#" data-bs-toggle="modal" data-bs-target="#contactModal">Contact Support</a></li>
+                <li><a href="#" data-bs-toggle="modal" data-bs-target="#faqModal">FAQ</a></li>
+                <li><a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal">Privacy Policy</a></li>
+                <li><a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms of Use</a></li>
+              </ul>
+            </div>
+
+            <!-- Contact Info -->
+            <div class="col-lg-2 col-md-6 mb-4">
+              <h6 class="footer-title">Contact</h6>
+              <div class="contact-info">
+                <div class="contact-item">
+                  <i class="fas fa-map-marker-alt"></i>
+                  <span>Strathmore University<br>Ole Sangale Road, Nairobi</span>
+                </div>
+                <div class="contact-item">
+                  <i class="fas fa-phone"></i>
+                  <span>+254 703 034000</span>
+                </div>
+                <div class="contact-item">
+                  <i class="fas fa-envelope"></i>
+                  <span>clubs@strathmore.edu</span>
+                </div>
+                <div class="contact-item">
+                  <i class="fas fa-clock"></i>
+                  <span>Mon-Fri: 8AM-6PM</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Bottom -->
+      <div class="footer-bottom">
+        <div class="container">
+          <div class="row align-items-center">
+            <div class="col-md-6">
+              <p class="mb-0">&copy; {{ now.year if now else '2025' }} Club Management System. All rights reserved.</p>
+            </div>
+            <div class="col-md-6">
+              <div class="footer-bottom-links">
+                <span class="me-3">Made with <i class="fas fa-heart text-danger"></i> for Strathmore</span>
+                <a href="#" class="me-2">Privacy</a>
+                <a href="#" class="me-2">Terms</a>
+                <a href="#" data-bs-toggle="modal" data-bs-target="#accessibilityModal">Accessibility</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Footer Modals -->
+    <!-- Help Modal -->
+    <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="helpModalLabel">Help Center</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <h6><i class="fas fa-users me-2"></i>Getting Started</h6>
+                <p class="small">Learn how to create your profile, join clubs, and navigate the platform.</p>
+              </div>
+              <div class="col-md-4 mb-3">
+                <h6><i class="fas fa-calendar me-2"></i>Events</h6>
+                <p class="small">Discover how to register for events, submit feedback, and track your participation.</p>
+              </div>
+              <div class="col-md-4 mb-3">
+                <h6><i class="fas fa-credit-card me-2"></i>Payments</h6>
+                <p class="small">Understand membership fees, payment methods, and transaction history.</p>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Modal -->
+    <div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="contactModalLabel">Contact Support</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>Need help? We're here for you!</p>
+            <div class="contact-methods">
+              <div class="d-flex align-items-center mb-3">
+                <i class="fas fa-envelope fa-lg me-3 text-primary"></i>
+                <div>
+                  <strong>Email Support</strong><br>
+                  <small>clubs@strathmore.edu - Response within 24 hours</small>
+                </div>
+              </div>
+              <div class="d-flex align-items-center mb-3">
+                <i class="fas fa-phone fa-lg me-3 text-success"></i>
+                <div>
+                  <strong>Phone Support</strong><br>
+                  <small>+254 703 034000 - Monday to Friday, 8AM-6PM</small>
+                </div>
+              </div>
+              <div class="d-flex align-items-center">
+                <i class="fas fa-map-marker-alt fa-lg me-3 text-danger"></i>
+                <div>
+                  <strong>Visit Us</strong><br>
+                  <small>Student Center, Strathmore University</small>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Toast Notification System -->
+    <script>
+      class ToastManager {
+        constructor() {
+          this.container = document.getElementById('toastContainer');
+          this.init();
+        }
+        
+        init() {
+          // Process Flask flash messages on page load
+          this.processFlashMessages();
+        }
+        
+        processFlashMessages() {
+          {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+          const messages = [
+            {% for category, message in messages %}
+            {
+              type: '{{ category }}',
+              message: {{ message|tojson }},
+              duration: {{ 5000 if category in ['success', 'info'] else 7000 }}
+            }{{ ',' if not loop.last else '' }}
+            {% endfor %}
+          ];
+          
+          messages.forEach((msg, index) => {
+            setTimeout(() => {
+              this.show(msg.type, msg.message, msg.duration);
+            }, index * 150); // Stagger multiple messages
+          });
+          {% endif %}
+          {% endwith %}
+        }
+        
+        show(type, message, duration = 5000) {
+          const toastId = 'toast-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+          const iconMap = {
+            success: 'fas fa-check-circle',
+            error: 'fas fa-exclamation-circle',
+            danger: 'fas fa-exclamation-triangle',
+            warning: 'fas fa-exclamation-triangle',
+            info: 'fas fa-info-circle'
+          };
+          
+          const titleMap = {
+            success: 'Success',
+            error: 'Error',
+            danger: 'Error',
+            warning: 'Warning',
+            info: 'Information'
+          };
+          
+          const toastElement = document.createElement('div');
+          toastElement.className = `custom-toast toast-${type}`;
+          toastElement.id = toastId;
+          toastElement.innerHTML = `
+            <div class="toast-header">
+              <div class="toast-icon">
+                <i class="${iconMap[type] || 'fas fa-info-circle'}"></i>
+              </div>
+              <strong class="me-auto">${titleMap[type] || 'Notification'}</strong>
+              <button type="button" class="toast-close ms-2" onclick="toastManager.hide('${toastId}')">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div class="toast-body">
+              ${this.escapeHtml(message)}
+            </div>
+            <div class="toast-progress"></div>
+          `;
+          
+          this.container.appendChild(toastElement);
+          
+          // Auto-hide after duration
+          setTimeout(() => {
+            this.hide(toastId);
+          }, duration);
+          
+          return toastId;
+        }
+        
+        hide(toastId) {
+          const toast = document.getElementById(toastId);
+          if (toast) {
+            toast.classList.add('hiding');
+            setTimeout(() => {
+              if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+              }
+            }, 300);
+          }
+        }
+        
+        hideAll() {
+          const toasts = this.container.querySelectorAll('.custom-toast');
+          toasts.forEach(toast => {
+            this.hide(toast.id);
+          });
+        }
+        
+        escapeHtml(text) {
+          const div = document.createElement('div');
+          div.textContent = text;
+          return div.innerHTML;
+        }
+        
+        // Public methods for manual toast creation
+        success(message, duration) {
+          return this.show('success', message, duration);
+        }
+        
+        error(message, duration) {
+          return this.show('error', message, duration);
+        }
+        
+        warning(message, duration) {
+          return this.show('warning', message, duration);
+        }
+        
+        info(message, duration) {
+          return this.show('info', message, duration);
+        }
+      }
+      
+      // Initialize toast manager when DOM is ready
+      let toastManager;
+      document.addEventListener('DOMContentLoaded', function() {
+        toastManager = new ToastManager();
+        
+        // Make it globally available for other scripts
+        window.toastManager = toastManager;
+        
+        // Add keyboard support
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape') {
+            toastManager.hideAll();
+          }
+        });
+      });
+      
+      // Utility functions for easy access
+      function showToast(type, message, duration) {
+        if (window.toastManager) {
+          return window.toastManager.show(type, message, duration);
+        }
+      }
+      
+      function showSuccess(message, duration) {
+        return showToast('success', message, duration);
+      }
+      
+      function showError(message, duration) {
+        return showToast('error', message, duration);
+      }
+      
+      function showWarning(message, duration) {
+        return showToast('warning', message, duration);
+      }
+      
+      function showInfo(message, duration) {
+        return showToast('info', message, duration);
+      }
+    </script>
+    
+    {% block extra_scripts %}{% endblock %}
+  </body>
+</html>

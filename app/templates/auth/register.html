@@ -1,0 +1,749 @@
+<!-- File: app/templates/auth/register.html -->
+{% extends "base.html" %}
+{% block title %}Register | Club Management System{% endblock %}
+{% block content %}
+
+<style>
+  .register-wrapper {
+    min-height: 100vh;
+    background: #fafafa;
+    position: relative;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  
+  .geometric-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 1;
+  }
+  
+  .shape {
+    position: absolute;
+    border-radius: 2px;
+    background: linear-gradient(45deg, #2563eb, #1d4ed8);
+    animation: float 25s infinite linear;
+  }
+  
+  .shape:nth-child(1) {
+    width: 100px;
+    height: 100px;
+    top: 15%;
+    left: 5%;
+    animation-delay: 0s;
+    opacity: 0.08;
+    border-radius: 50%;
+  }
+  
+  .shape:nth-child(2) {
+    width: 60px;
+    height: 60px;
+    top: 70%;
+    right: 10%;
+    animation-delay: -8s;
+    opacity: 0.06;
+  }
+  
+  .shape:nth-child(3) {
+    width: 80px;
+    height: 80px;
+    bottom: 15%;
+    left: 15%;
+    animation-delay: -15s;
+    opacity: 0.05;
+    transform: rotate(45deg);
+  }
+  
+  .shape:nth-child(4) {
+    width: 40px;
+    height: 40px;
+    top: 40%;
+    right: 25%;
+    animation-delay: -20s;
+    opacity: 0.04;
+    border-radius: 50%;
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    25% { transform: translateY(-30px) rotate(90deg); }
+    50% { transform: translateY(0px) rotate(180deg); }
+    75% { transform: translateY(25px) rotate(270deg); }
+  }
+  
+  .register-container {
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  
+  .register-grid {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    max-width: 1200px;
+    width: 100%;
+    background: white;
+    border-radius: 0;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    min-height: 700px;
+  }
+  
+  .brand-section {
+    background: #1e293b;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 50px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .brand-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 80px;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1));
+  }
+  
+  .brand-section h1 {
+    color: white;
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 16px 0;
+    line-height: 1.2;
+  }
+  
+  .brand-section p {
+    color: #94a3b8;
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0 0 32px 0;
+  }
+  
+  .role-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+  }
+  
+  .role-card {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 8px;
+    padding: 20px;
+    transition: all 0.2s ease;
+  }
+  
+  .role-card h4 {
+    color: #3b82f6;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+  }
+  
+  .role-card p {
+    color: #cbd5e1;
+    font-size: 14px;
+    margin: 0;
+    line-height: 1.4;
+  }
+  
+  .form-section {
+    padding: 50px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    overflow-y: auto;
+    max-height: 100vh;
+  }
+  
+  .form-header {
+    margin-bottom: 32px;
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 10;
+    padding-bottom: 16px;
+  }
+  
+  .form-header h2 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 6px 0;
+  }
+  
+  .form-header p {
+    color: #6b7280;
+    font-size: 15px;
+    margin: 0;
+  }
+  
+  .progress-steps {
+    display: flex;
+    gap: 12px;
+    margin: 16px 0 0 0;
+  }
+  
+  .step {
+    flex: 1;
+    height: 3px;
+    background: #e5e7eb;
+    border-radius: 2px;
+    transition: background 0.3s ease;
+  }
+  
+  .step.active {
+    background: #2563eb;
+  }
+  
+  .form-grid {
+    display: grid;
+    gap: 20px;
+  }
+  
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  
+  .form-group {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .form-group.full-width {
+    grid-column: 1 / -1;
+  }
+  
+  .form-group label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 6px;
+  }
+  
+  .form-control, .form-select {
+    padding: 12px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 15px;
+    color: #1f2937;
+    background: white;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+  }
+  
+  .form-control:focus, .form-select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+  
+  .form-control.is-invalid, .form-select.is-invalid {
+    border-color: #dc2626;
+    background: #fef2f2;
+  }
+  
+  .form-control.is-invalid:focus, .form-select.is-invalid:focus {
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+  }
+  
+  .invalid-feedback {
+    display: block;
+    color: #dc2626;
+    font-size: 13px;
+    margin-top: 4px;
+  }
+  
+  .role-section {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 24px;
+    margin: 24px 0;
+    transition: all 0.3s ease;
+  }
+  
+  .role-section.hidden {
+    display: none;
+  }
+  
+  .role-section h4 {
+    color: #1e293b;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .role-section h4::before {
+    content: '';
+    width: 4px;
+    height: 16px;
+    background: #2563eb;
+    border-radius: 2px;
+  }
+  
+  .password-section {
+    background: #fefefe;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 24px;
+    margin: 24px 0;
+  }
+  
+  .password-section h4 {
+    color: #1e293b;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 16px 0;
+  }
+  
+  .input-group {
+    position: relative;
+    display: flex;
+  }
+  
+  .input-group .form-control {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-right: none;
+  }
+  
+  .input-group-text {
+    border: 1px solid #d1d5db;
+    border-left: none;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    background: #f9fafb;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .input-group-text:hover {
+    background: #f3f4f6;
+  }
+  
+  .toggle-password {
+    background: none;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .password-help {
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+  
+  .match-indicator {
+    color: #6b7280;
+    transition: color 0.2s ease;
+  }
+  
+  .match-indicator.success {
+    color: #059669;
+  }
+  
+  .match-indicator.error {
+    color: #dc2626;
+  }
+  
+  .submit-button {
+    width: 100%;
+    padding: 14px 24px;
+    background: #1f2937;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 32px;
+  }
+  
+  .submit-button:hover {
+    background: #111827;
+  }
+  
+  .submit-button:active {
+    transform: translateY(1px);
+  }
+  
+  .submit-button.loading {
+    pointer-events: none;
+    background: #9ca3af;
+  }
+  
+  .form-footer {
+    margin-top: 24px;
+    text-align: center;
+    padding-top: 24px;
+    border-top: 1px solid #e5e7eb;
+  }
+  
+  .form-footer a {
+    color: #2563eb;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  .form-footer a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Mobile Responsive */
+  @media (max-width: 968px) {
+    .register-grid {
+      grid-template-columns: 1fr;
+      max-width: 600px;
+    }
+    
+    .brand-section {
+      display: none;
+    }
+    
+    .form-section {
+      padding: 30px 25px;
+    }
+    
+    .form-row {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    
+    .form-header h2 {
+      font-size: 22px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .register-container {
+      padding: 20px 15px;
+    }
+    
+    .form-section {
+      padding: 25px 20px;
+    }
+    
+    .register-grid {
+      box-shadow: none;
+      border: 1px solid #e5e7eb;
+    }
+    
+    .role-section, .password-section {
+      padding: 20px;
+    }
+  }
+</style>
+
+<div class="register-wrapper">
+  <div class="geometric-bg">
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+  </div>
+  
+  <div class="register-container">
+    <div class="register-grid">
+      <div class="brand-section">
+        <h1>Join Our Community</h1>
+        <p>Choose your role and start building connections that matter.</p>
+        
+        <div class="role-cards">
+          <div class="role-card">
+            <h4>Student</h4>
+            <p>Join clubs, attend events, and connect with peers who share your interests.</p>
+          </div>
+          <div class="role-card">
+            <h4>Club Leader</h4>
+            <p>Lead initiatives, organize events, and build thriving student communities.</p>
+          </div>
+          <div class="role-card">
+            <h4>Administrator</h4>
+            <p>Oversee operations, manage clubs, and support campus life initiatives.</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-section">
+        <div class="form-header">
+          <h2>Create your account</h2>
+          <p>Fill in your details to get started</p>
+          <div class="progress-steps">
+            <div class="step active"></div>
+            <div class="step"></div>
+            <div class="step"></div>
+          </div>
+        </div>
+        
+        <form method="POST" action="{{ url_for('auth.register') }}" novalidate id="registerForm">
+          {{ form.csrf_token }}
+          
+          <!-- Basic Information -->
+          <div class="form-grid">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="first_name">First Name</label>
+                {{ form.first_name(class="form-control" + (" is-invalid" if form.first_name.errors else "")) }}
+                {% for error in form.first_name.errors %}
+                  <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+              </div>
+              <div class="form-group">
+                <label for="last_name">Last Name</label>
+                {{ form.last_name(class="form-control" + (" is-invalid" if form.last_name.errors else "")) }}
+                {% for error in form.last_name.errors %}
+                  <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+              </div>
+            </div>
+            
+            <div class="form-group full-width">
+              <label for="email">Email Address</label>
+              {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), autocomplete="email") }}
+              {% for error in form.email.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="phone">Phone Number</label>
+                {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else ""), placeholder="Optional") }}
+                {% for error in form.phone.errors %}
+                  <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+              </div>
+              <div class="form-group">
+                <label for="gender">Gender</label>
+                {{ form.gender(class="form-select" + (" is-invalid" if form.gender.errors else "")) }}
+                {% for error in form.gender.errors %}
+                  <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+              </div>
+            </div>
+            
+            <div class="form-group full-width">
+              <label for="role">I am a</label>
+              {{ form.role(class="form-select" + (" is-invalid" if form.role.errors else ""), id="role") }}
+              {% for error in form.role.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+          
+          <!-- Student Fields -->
+          <div id="StudentFields" class="role-section hidden">
+            <h4>Student Information</h4>
+            <div class="form-grid">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="school">School/Faculty</label>
+                  {{ form.school(class="form-control", placeholder="e.g., Engineering") }}
+                </div>
+                <div class="form-group">
+                  <label for="program">Program</label>
+                  {{ form.program(class="form-control", placeholder="e.g., Computer Science") }}
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="year_of_study">Year of Study</label>
+                  {{ form.year_of_study(class="form-control", placeholder="e.g., 2") }}
+                </div>
+                <div class="form-group">
+                  <label for="expected_graduation_year">Expected Graduation</label>
+                  {{ form.expected_graduation_year(class="form-control") }}
+                </div>
+              </div>
+              <div class="form-group full-width">
+                <label for="interests">Interests & Hobbies</label>
+                {{ form.interests(class="form-control", rows="3", placeholder="Tell us about your interests...") }}
+              </div>
+            </div>
+          </div>
+          
+          <!-- Admin Fields -->
+          <div id="AdminFields" class="role-section hidden">
+            <h4>Administrator Information</h4>
+            <div class="form-grid">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="staff_id">Staff ID</label>
+                  {{ form.staff_id(class="form-control", placeholder="Your staff identifier") }}
+                </div>
+                <div class="form-group">
+                  <label for="department_name">Department</label>
+                  {{ form.department_name(class="form-control", placeholder="e.g., Student Affairs") }}
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Password Section -->
+          <div class="password-section">
+            <h4>Secure Your Account</h4>
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label for="password">Password</label>
+                <div class="input-group">
+                  {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), id="password", placeholder="Create a strong password") }}
+                  <span class="input-group-text">
+                    <button type="button" class="toggle-password" id="togglePassword">
+                      <i class="fa fa-eye"></i>
+                    </button>
+                  </span>
+                </div>
+                {% for error in form.password.errors %}
+                  <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+                <div class="password-help">
+                  Must be at least 8 characters with uppercase, lowercase, number & special character
+                </div>
+              </div>
+              
+              <div class="form-group full-width">
+                <label for="confirm_password">Confirm Password</label>
+                <div class="input-group">
+                  {{ form.confirm_password(class="form-control" + (" is-invalid" if form.confirm_password.errors else ""), id="confirm_password", placeholder="Re-enter your password") }}
+                  <span class="input-group-text">
+                    <span class="match-indicator" id="matchIndicator"></span>
+                  </span>
+                </div>
+                {% for error in form.confirm_password.errors %}
+                  <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+          
+          {{ form.submit(class="submit-button", id="submitBtn") }}
+        </form>
+        
+        <div class="form-footer">
+          Already have an account? <a href="{{ url_for('auth.login') }}">Sign in here</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const roleSelect = document.getElementById('role');
+  const studentFields = document.getElementById('StudentFields');
+  const adminFields = document.getElementById('AdminFields');
+  const form = document.getElementById('registerForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const progressSteps = document.querySelectorAll('.step');
+  
+  // Role field toggle
+  function toggleFields() {
+    const role = roleSelect.value;
+    studentFields.classList.toggle('hidden', role !== 'Student');
+    adminFields.classList.toggle('hidden', role !== 'Admin');
+    
+    // Update progress
+    updateProgress();
+  }
+  
+  // Progress indicator
+  function updateProgress() {
+    const basicFields = form.querySelectorAll('input[required], select[required]');
+    const roleSpecificFields = document.querySelectorAll('.role-section:not(.hidden) input, .role-section:not(.hidden) select, .role-section:not(.hidden) textarea');
+    const passwordFields = document.querySelectorAll('.password-section input');
+    
+    let step1Complete = Array.from(basicFields).every(field => field.value.trim() !== '');
+    let step2Complete = Array.from(roleSpecificFields).every(field => field.value.trim() !== '');
+    let step3Complete = Array.from(passwordFields).every(field => field.value.trim() !== '');
+    
+    progressSteps[0].classList.toggle('active', step1Complete);
+    progressSteps[1].classList.toggle('active', step1Complete && step2Complete);
+    progressSteps[2].classList.toggle('active', step1Complete && step2Complete && step3Complete);
+  }
+  
+  // Password toggle
+  const togglePassword = document.getElementById('togglePassword');
+  const password = document.getElementById('password');
+  const confirmPassword = document.getElementById('confirm_password');
+  
+  togglePassword.addEventListener('click', function() {
+    const type = password.type === 'password' ? 'text' : 'password';
+    password.type = type;
+    confirmPassword.type = type;
+    this.querySelector('i').classList.toggle('fa-eye-slash');
+  });
+  
+  // Password match indicator
+  const matchIndicator = document.getElementById('matchIndicator');
+  
+  function checkPasswordMatch() {
+    if (!confirmPassword.value) {
+      matchIndicator.innerHTML = '';
+      matchIndicator.className = 'match-indicator';
+      return;
+    }
+    
+    if (password.value === confirmPassword.value) {
+      matchIndicator.innerHTML = '<i class="fa fa-check"></i>';
+      matchIndicator.className = 'match-indicator success';
+    } else {
+      matchIndicator.innerHTML = '<i class="fa fa-times"></i>';
+      matchIndicator.className = 'match-indicator error';
+    }
+    updateProgress();
+  }
+  
+  // Event listeners
+  roleSelect.addEventListener('change', toggleFields);
+  password.addEventListener('input', checkPasswordMatch);
+  confirmPassword.addEventListener('input', checkPasswordMatch);
+  
+  // Progress tracking
+  form.addEventListener('input', updateProgress);
+  form.addEventListener('change', updateProgress);
+  
+  // Form submission
+  form.addEventListener('submit', function() {
+    submitBtn.classList.add('loading');
+    submitBtn.textContent = 'Creating Account...';
+  });
+  
+  // Initialize
+  toggleFields();
+  updateProgress();
+});
+</script>
+
+{% endblock %}

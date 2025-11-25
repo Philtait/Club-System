@@ -1,0 +1,206 @@
+<!-- File: app/templates/payments/event_payment.html (New - Replace pesapal_event.html) -->
+{% extends "base.html" %}
+{% block title %}Pay Event Fee - {{ event.title }}{% endblock %}
+
+{% block extra_head %}
+<style>
+  .event-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    background: #f8f9fa;
+  }
+  .btn-pesapal {
+    background-color: #2c5aa0;
+    border-color: #2c5aa0;
+    color: white;
+  }
+  .btn-pesapal:hover {
+    background-color: #1e3f73;
+    border-color: #1e3f73;
+  }
+  .loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ffffff;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="row">
+    <div class="col-md-8 mx-auto">
+      <h2 class="mb-4">
+        <i class="fas fa-calendar-check me-2"></i>
+        Event Registration Payment
+      </h2>
+
+      <div class="event-card mb-4">
+        <div class="row">
+          <div class="col-md-8">
+            <h4>{{ event.title }}</h4>
+            <p class="text-muted mb-2">
+              <i class="fas fa-users me-1"></i>
+              Organized by: {{ event.club.name }}
+            </p>
+            <p class="text-muted mb-2">
+              <i class="fas fa-calendar me-1"></i>
+              Date: {{ event.event_date.strftime('%B %d, %Y at %I:%M %p') }}
+            </p>
+            <p class="text-muted mb-2">
+              <i class="fas fa-map-marker-alt me-1"></i>
+              Location: {{ event.location }}
+            </p>
+            {% if event.description %}
+            <p class="mt-3">{{ event.description }}</p>
+            {% endif %}
+          </div>
+          <div class="col-md-4 text-end">
+            {% if event.image_url %}
+            <img src="{{ url_for('static', filename='images/events/' + event.image_url) }}"
+                 alt="{{ event.title }}"
+                 class="img-fluid rounded">
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        Complete your event registration by paying the participation fee using Pesapal's secure payment gateway.
+      </div>
+
+      <!-- Payment Form -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-credit-card me-2"></i>
+            Payment Details
+          </h5>
+        </div>
+        <div class="card-body">
+          <form id="payment-form">
+            <input type="hidden" id="event-id" name="event_id" value="{{ event.event_id }}">
+            <input type="hidden" id="purpose" name="purpose" value="Event">
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="customer-name" class="form-label">Your Name *</label>
+                  <input type="text" id="customer-name" name="customer_name"
+                         class="form-control"
+                         value="{{ current_user.first_name }} {{ current_user.last_name }}"
+                         required>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="phone-number" class="form-label">Phone Number *</label>
+                  <input type="tel" id="phone-number" name="phone_number"
+                         class="form-control"
+                         placeholder="e.g. 0712345678"
+                         value="{{ current_user.phone or '' }}"
+                         required>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="amount" class="form-label">Registration Fee (KES) *</label>
+              <input type="number" id="amount" name="amount"
+                     class="form-control"
+                     min="1"
+                     step="0.01"
+                     placeholder="e.g. 500.00"
+                     required>
+            </div>
+
+            <div class="d-grid">
+              <button type="submit" id="submit-payment" class="btn btn-pesapal btn-lg">
+                <i class="fas fa-lock me-2"></i>
+                Pay with Pesapal
+              </button>
+
+              <button type="button" id="loading-payment" class="btn btn-secondary btn-lg d-none" disabled>
+                <div class="loading-spinner me-2"></div>
+                Processing...
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Phone number formatting
+document.getElementById('phone-number').addEventListener('input', function(e) {
+  let phone = e.target.value.replace(/\D/g, '');
+
+  // Format to Kenyan number
+  if (phone.startsWith('254')) {
+    e.target.value = phone;
+  } else if (phone.startsWith('0')) {
+    e.target.value = '254' + phone.slice(1);
+  } else if (phone.length > 0) {
+    e.target.value = '254' + phone;
+  }
+});
+
+// Handle payment form submission
+document.getElementById('payment-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const formData = new FormData(e.target);
+  const payload = {
+    purpose: 'Event',
+    related_id: parseInt(formData.get('event_id')),
+    amount: parseFloat(formData.get('amount')),
+    customer_name: formData.get('customer_name'),
+    phone_number: formData.get('phone_number')
+  };
+
+  // Show loading state
+  document.getElementById('submit-payment').classList.add('d-none');
+  document.getElementById('loading-payment').classList.remove('d-none');
+
+  try {
+    const response = await fetch('/payments/initiate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      // Redirect to iframe page
+      window.location.href = `/payments/iframe/${data.payment_id}`;
+    } else {
+      throw new Error(data.error || 'Failed to initiate payment');
+    }
+  } catch (error) {
+    console.error('Payment error:', error);
+    alert('An error occurred: ' + error.message);
+  } finally {
+    // Reset button state
+    document.getElementById('submit-payment').classList.remove('d-none');
+    document.getElementById('loading-payment').classList.add('d-none');
+  }
+});
+</script>
+{% endblock %}

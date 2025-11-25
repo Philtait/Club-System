@@ -1,0 +1,731 @@
+<!-- File: app/templates/events/view_event.html -->
+{% extends "base.html" %}
+{% block title %}{{ event.title }} | Club Management System{% endblock %}
+
+{% block extra_head %}
+<style>
+  .event-wrapper {
+    background: #f8fafc;
+    min-height: calc(100vh - 120px);
+    padding: 40px 0;
+  }
+
+  .event-hero {
+    background: white;
+    border-radius: 20px;
+    padding: 0;
+    margin-bottom: 32px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .event-image {
+    width: 100%;
+    height: 300px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .event-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .event-image::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.3) 100%);
+    z-index: 1;
+  }
+
+  .event-image-placeholder {
+    color: white;
+    font-size: 4rem;
+    z-index: 2;
+    position: relative;
+  }
+
+  .event-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
+    color: white;
+    padding: 32px;
+    z-index: 3;
+  }
+
+  .event-date-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    color: #1e293b;
+    padding: 12px 16px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
+    z-index: 4;
+  }
+
+  .date-day {
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+
+  .date-month {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748b;
+  }
+
+  .event-content {
+    padding: 32px;
+  }
+
+  .event-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .event-subtitle {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 18px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .content-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 32px;
+  }
+
+  .main-content {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+    height: fit-content;
+  }
+
+  .sidebar {
+    display: grid;
+    gap: 24px;
+    height: fit-content;
+  }
+
+  .section-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-icon {
+    width: 28px;
+    height: 28px;
+    background: #3b82f6;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+  }
+
+  .event-description {
+    color: #475569;
+    font-size: 16px;
+    line-height: 1.7;
+    margin-bottom: 32px;
+  }
+
+  .info-card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+  }
+
+  .card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-icon {
+    width: 20px;
+    height: 20px;
+    background: #3b82f6;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 10px;
+  }
+
+  .info-list {
+    display: grid;
+    gap: 12px;
+  }
+
+  .info-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .info-item:last-child {
+    border-bottom: none;
+  }
+
+  .info-icon {
+    width: 16px;
+    height: 16px;
+    background: #f1f5f9;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+
+  .info-content {
+    flex-grow: 1;
+  }
+
+  .info-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+
+  .info-value {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1e293b;
+  }
+
+  .action-section {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+  }
+
+  .action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .btn-primary-gradient {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    border: none;
+    padding: 14px 24px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-primary-gradient::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .btn-primary-gradient:hover::before {
+    left: 100%;
+  }
+
+  .btn-primary-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+    color: white;
+  }
+
+  .btn-success-gradient {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border: none;
+    padding: 14px 24px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-success-gradient::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .btn-success-gradient:hover::before {
+    left: 100%;
+  }
+
+  .btn-success-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+    color: white;
+  }
+
+  .btn-warning-gradient {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    border: none;
+    padding: 14px 24px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-warning-gradient::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .btn-warning-gradient:hover::before {
+    left: 100%;
+  }
+
+  .btn-warning-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+    color: white;
+  }
+
+  .btn-disabled {
+    background: #9ca3af;
+    color: white;
+    border: none;
+    padding: 14px 24px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: not-allowed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    opacity: 0.7;
+  }
+
+  .btn-outline {
+    background: white;
+    color: #64748b;
+    border: 2px solid #e2e8f0;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn-outline:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #475569;
+    transform: translateY(-1px);
+  }
+
+  .status-indicator {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .status-registered {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+  }
+
+  .status-closed {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+  }
+
+  .status-feedback {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+  }
+
+  .feedback-notice {
+    background: #f0f9ff;
+    border: 1px solid #e0f2fe;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 16px;
+    color: #0c4a6e;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .club-link {
+    color: #3b82f6;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+  }
+
+  .club-link:hover {
+    color: #2563eb;
+    text-decoration: underline;
+  }
+
+  /* Mobile Responsiveness */
+  @media (max-width: 768px) {
+    .event-wrapper {
+      padding: 20px 0;
+    }
+
+    .event-hero {
+      margin-bottom: 24px;
+    }
+
+    .event-image {
+      height: 200px;
+    }
+
+    .event-overlay {
+      padding: 20px;
+    }
+
+    .event-title {
+      font-size: 1.8rem;
+    }
+
+    .event-content {
+      padding: 20px;
+    }
+
+    .content-grid {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    .main-content {
+      padding: 24px 20px;
+    }
+
+    .info-card, .action-section {
+      padding: 20px;
+    }
+
+    .action-buttons {
+      gap: 10px;
+    }
+
+    .event-date-badge {
+      top: 16px;
+      right: 16px;
+      padding: 10px 12px;
+    }
+
+    .date-day {
+      font-size: 20px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="event-wrapper">
+  <div class="container">
+    <!-- Event Hero Section -->
+    <div class="event-hero">
+      <div class="event-image">
+        {% if event.image_url %}
+          <img src="{{ url_for('static', filename=event.image_url) }}" alt="{{ event.title }}">
+        {% else %}
+          <i class="fas fa-calendar-alt event-image-placeholder"></i>
+        {% endif %}
+        
+        <!-- Date Badge -->
+        <div class="event-date-badge">
+          <div class="date-day">{{ event.event_date.strftime('%d') }}</div>
+          <div class="date-month">{{ event.event_date.strftime('%b') }}</div>
+        </div>
+
+        <!-- Event Title Overlay -->
+        <div class="event-overlay">
+          <h1 class="event-title">{{ event.title }}</h1>
+          <div class="event-subtitle">
+            <i class="fas fa-users"></i>
+            <a href="{{ url_for('clubs.view_club', club_id=event.club.club_id) }}" class="club-link" style="color: rgba(255, 255, 255, 0.9);">{{ event.club.name }}</a>
+            <span>•</span>
+            <i class="fas fa-map-marker-alt"></i>
+            {{ event.location }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content Grid -->
+    <div class="content-grid">
+      <!-- Main Content -->
+      <div class="main-content">
+        <h2 class="section-title">
+          <div class="section-icon">
+            <i class="fas fa-info"></i>
+          </div>
+          Event Description
+        </h2>
+        <div class="event-description">{{ event.description }}</div>
+
+        <!-- Back Button -->
+        <div style="margin-top: 32px;">
+          <a href="{{ url_for('events.list_events') }}" class="btn-outline">
+            <i class="fas fa-arrow-left"></i>
+            Back to Events
+          </a>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <!-- Event Details Card -->
+        <div class="info-card">
+          <h3 class="card-title">
+            <div class="card-icon">
+              <i class="fas fa-calendar"></i>
+            </div>
+            Event Details
+          </h3>
+          <div class="info-list">
+            <div class="info-item">
+              <div class="info-icon">
+                <i class="fas fa-clock"></i>
+              </div>
+              <div class="info-content">
+                <div class="info-label">Date & Time</div>
+                <div class="info-value">{{ event.event_date.strftime('%B %d, %Y at %I:%M %p') }}</div>
+              </div>
+            </div>
+
+            {% if event.registration_deadline %}
+            <div class="info-item">
+              <div class="info-icon">
+                <i class="fas fa-hourglass-half"></i>
+              </div>
+              <div class="info-content">
+                <div class="info-label">Registration Deadline</div>
+                <div class="info-value">{{ event.registration_deadline.strftime('%B %d, %Y') }}</div>
+              </div>
+            </div>
+            {% endif %}
+
+            {% if event.max_attendees %}
+            <div class="info-item">
+              <div class="info-icon">
+                <i class="fas fa-users"></i>
+              </div>
+              <div class="info-content">
+                <div class="info-label">Max Attendees</div>
+                <div class="info-value">{{ event.max_attendees }} people</div>
+              </div>
+            </div>
+            {% endif %}
+
+            <div class="info-item">
+              <div class="info-icon">
+                <i class="fas fa-map-marker-alt"></i>
+              </div>
+              <div class="info-content">
+                <div class="info-label">Location</div>
+                <div class="info-value">{{ event.location }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions Card -->
+        {% if current_user.is_authenticated and current_user.role == 'Student' %}
+        <div class="action-section">
+          <h3 class="card-title">
+            <div class="card-icon">
+              <i class="fas fa-ticket-alt"></i>
+            </div>
+            Registration
+          </h3>
+
+          <!-- Status Indicators -->
+          {% if already_registered %}
+            <div class="status-indicator status-registered">
+              <i class="fas fa-check-circle"></i> You're Registered!
+            </div>
+          {% elif registration_closed %}
+            <div class="status-indicator status-closed">
+              <i class="fas fa-times-circle"></i> Registration Closed
+            </div>
+          {% endif %}
+
+          <div class="action-buttons">
+            <!-- Payment Button -->
+            <a href="{{ url_for('events.event_payment_page', event_id=event.event_id) }}"
+               class="btn-success-gradient">
+              <i class="fas fa-credit-card"></i>
+              Pay Registration Fee
+            </a>
+
+            <!-- Registration Button -->
+            <form method="POST" action="{{ url_for('events.register', event_id=event.event_id) }}" style="width: 100%;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              {% if already_registered %}
+                <button type="button" class="btn-disabled" disabled style="width: 100%;">
+                  <i class="fas fa-check"></i>
+                  Already Registered
+                </button>
+              {% elif registration_closed %}
+                <button type="button" class="btn-disabled" disabled style="width: 100%;">
+                  <i class="fas fa-clock"></i>
+                  Registration Closed
+                </button>
+              {% else %}
+                <button type="submit" class="btn-primary-gradient" style="width: 100%;">
+                  <i class="fas fa-user-plus"></i>
+                  Register Now
+                </button>
+              {% endif %}
+            </form>
+
+            <!-- Feedback Section -->
+            {% if can_submit_feedback %}
+              {% if feedback_submitted %}
+                <div class="feedback-notice">
+                  <i class="fas fa-check-circle"></i>
+                  You have submitted feedback for this event.
+                </div>
+              {% else %}
+                <a href="{{ url_for('feedback.submit_feedback', event_id=event.event_id) }}"
+                   class="btn-warning-gradient">
+                  <i class="fas fa-star"></i>
+                  Submit Feedback
+                </a>
+              {% endif %}
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Club Information Card -->
+        <div class="info-card">
+          <h3 class="card-title">
+            <div class="card-icon">
+              <i class="fas fa-users"></i>
+            </div>
+            Organized By
+          </h3>
+          <div style="text-align: center; padding: 16px 0;">
+            <h4 style="margin-bottom: 8px; color: #1e293b;">{{ event.club.name }}</h4>
+            <p style="color: #64748b; font-size: 14px; margin-bottom: 16px;">{{ event.club.category }}</p>
+            <a href="{{ url_for('clubs.view_club', club_id=event.club.club_id) }}" 
+               class="btn-outline" style="width: 100%;">
+              <i class="fas fa-eye"></i>
+              View Club Page
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

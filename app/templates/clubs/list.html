@@ -1,0 +1,799 @@
+<!-- File: templates/clubs.html -->
+{% extends "base.html" %}
+{% block title %}Clubs | Club Management System{% endblock %}
+
+{% block extra_head %}
+<style>
+  .clubs-wrapper {
+    background: #f8fafc;
+    min-height: calc(100vh - 120px);
+    padding: 40px 0;
+  }
+
+  .clubs-header {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 32px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+  }
+
+  .clubs-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 8px;
+  }
+
+  .clubs-subtitle {
+    color: #64748b;
+    font-size: 16px;
+    margin: 0;
+  }
+
+  .search-section {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 32px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+  }
+
+  .search-container {
+    position: relative;
+    margin-bottom: 24px;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 16px 20px 16px 50px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 16px;
+    background: #f8fafc;
+    transition: all 0.3s ease;
+    outline: none;
+  }
+
+  .search-input:focus {
+    border-color: #3b82f6;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748b;
+    font-size: 18px;
+    pointer-events: none;
+  }
+
+  .search-clear {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #64748b;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+    cursor: pointer;
+    display: none;
+    transition: all 0.2s ease;
+  }
+
+  .search-clear:hover {
+    background: #475569;
+  }
+
+  .search-clear.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .filters-container {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .filter-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .filter-select {
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    color: #374151;
+    min-width: 140px;
+    transition: all 0.2s ease;
+  }
+
+  .filter-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  .search-stats {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: #f1f5f9;
+    border-radius: 8px;
+    margin-top: 16px;
+    font-size: 14px;
+    color: #64748b;
+  }
+
+  .results-count {
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .search-time {
+    font-style: italic;
+  }
+
+  .clubs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  .club-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+    transition: all 0.3s ease;
+    position: relative;
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .club-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  }
+
+  .club-card.hidden {
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+  }
+
+  .club-card.filtering {
+    transition: all 0.4s ease;
+  }
+
+  .club-image {
+    height: 180px;
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .club-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .club-card:hover .club-image img {
+    transform: scale(1.05);
+  }
+
+  .club-category-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(59, 130, 246, 0.9);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+  }
+
+  .club-content {
+    padding: 24px;
+  }
+
+  .club-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+
+  .club-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    color: #64748b;
+  }
+
+  .club-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .club-description {
+    color: #475569;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    font-size: 14px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .club-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn-club-primary {
+    background: #1e293b;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    flex: 1;
+    text-align: center;
+  }
+
+  .btn-club-primary:hover {
+    background: #334155;
+    color: white;
+    transform: translateY(-1px);
+  }
+
+  .btn-club-secondary {
+    background: #f8fafc;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-club-secondary:hover {
+    background: #e2e8f0;
+    color: #475569;
+  }
+
+  .no-results {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+  }
+
+  .no-results i {
+    font-size: 4rem;
+    color: #cbd5e1;
+    margin-bottom: 20px;
+  }
+
+  .no-results h3 {
+    color: #475569;
+    margin-bottom: 12px;
+    font-size: 1.5rem;
+  }
+
+  .no-results p {
+    color: #64748b;
+    margin-bottom: 20px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .create-action {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .create-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+    color: white;
+  }
+
+  .search-highlight {
+    background: yellow;
+    font-weight: 600;
+  }
+
+  /* Loading Animation */
+  .loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+  }
+
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f1f5f9;
+    border-top: 3px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Mobile Responsiveness */
+  @media (max-width: 768px) {
+    .clubs-wrapper {
+      padding: 20px 0;
+    }
+
+    .clubs-header,
+    .search-section {
+      padding: 24px 20px;
+      margin-bottom: 24px;
+    }
+
+    .clubs-title {
+      font-size: 1.5rem;
+    }
+
+    .filters-container {
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .filter-group {
+      width: 100%;
+    }
+
+    .filter-select {
+      width: 100%;
+    }
+
+    .clubs-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .club-content {
+      padding: 20px;
+    }
+
+    .club-actions {
+      flex-direction: column;
+    }
+
+    .search-stats {
+      flex-direction: column;
+      gap: 8px;
+      text-align: center;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="clubs-wrapper">
+  <div class="container">
+    <!-- Header -->
+    <div class="clubs-header">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h1 class="clubs-title">Student Clubs</h1>
+          <p class="clubs-subtitle">Discover and join amazing student organizations</p>
+        </div>
+        {% if current_user.is_authenticated and current_user.role == 'Admin' %}
+        <a href="{{ url_for('clubs.create_club') }}" class="create-action">
+          <i class="fas fa-plus"></i>Create New Club
+        </a>
+        {% elif current_user.is_authenticated and current_user.role in ['Student', 'ClubLeader'] %}
+        <a href="{{ url_for('clubs.request_club') }}" class="create-action">
+          <i class="fas fa-paper-plane"></i>Request Club
+        </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="search-section">
+      <div class="search-container">
+        <input type="text" id="searchInput" class="search-input" 
+               placeholder="Search clubs by name, category, description...">
+        <button class="search-clear" id="searchClear">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="filters-container">
+        <div class="filter-group">
+          <label class="filter-label">Category</label>
+          <select id="categoryFilter" class="filter-select">
+            <option value="">All Categories</option>
+            {% for category in categories %}
+            <option value="{{ category }}">{{ category }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        
+        <div class="filter-group">
+          <label class="filter-label">Sort By</label>
+          <select id="sortFilter" class="filter-select">
+            <option value="name">Name (A-Z)</option>
+            <option value="name-desc">Name (Z-A)</option>
+            <option value="category">Category</option>
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+          </select>
+        </div>
+        
+        <div class="filter-group">
+          <label class="filter-label">View</label>
+          <select id="viewMode" class="filter-select">
+            <option value="grid">Grid View</option>
+            <option value="list">List View</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="search-stats" id="searchStats">
+        <span class="results-count">Showing <span id="resultCount">{{ clubs|length }}</span> of {{ clubs|length }} clubs</span>
+        <span class="search-time" id="searchTime"></span>
+      </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Clubs Grid -->
+    <div class="clubs-grid" id="clubsGrid">
+      {% if clubs %}
+        {% for club in clubs %}
+        <div class="club-card" 
+             data-name="{{ club.name|lower }}" 
+             data-category="{{ club.category|lower }}"
+             data-description="{{ club.description|lower if club.description else '' }}"
+             data-created="{{ club.created_at.isoformat() if club.created_at else '' }}">
+          <div class="club-image">
+            <img src="{{ url_for('static', filename=club.logo_url) }}"
+                 onerror="this.src='{{ url_for('static', filename='images/default-club.jpg') }}'"
+                 alt="{{ club.name }} logo">
+            <div class="club-category-badge">{{ club.category }}</div>
+          </div>
+          <div class="club-content">
+            <h3 class="club-title" data-searchable>{{ club.name }}</h3>
+            <div class="club-meta">
+              {% if club.location %}
+              <div class="club-meta-item">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>{{ club.location[:20] }}{% if club.location|length > 20 %}...{% endif %}</span>
+              </div>
+              {% endif %}
+              {% if club.meeting_schedule %}
+              <div class="club-meta-item">
+                <i class="fas fa-clock"></i>
+                <span>{{ club.meeting_schedule[:15] }}{% if club.meeting_schedule|length > 15 %}...{% endif %}</span>
+              </div>
+              {% endif %}
+            </div>
+            <p class="club-description" data-searchable>
+              {% if club.description %}
+                {{ club.description[:140] }}{% if club.description|length > 140 %}...{% endif %}
+              {% else %}
+                Discover what this club has to offer. Join to learn more about their activities and community.
+              {% endif %}
+            </p>
+            <div class="club-actions">
+              <a href="{{ url_for('clubs.view_club', club_id=club.club_id) }}" 
+                 class="btn-club-primary">
+                <i class="fas fa-eye me-1"></i>View Details
+              </a>
+              <a href="{{ url_for('clubs.view_club', club_id=club.club_id) }}" 
+                 class="btn-club-secondary">
+                <i class="fas fa-heart"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      {% endif %}
+    </div>
+
+    <!-- No Results State -->
+    <div class="no-results" id="noResults" style="display: none;">
+      <i class="fas fa-search"></i>
+      <h3>No clubs found</h3>
+      <p>We couldn't find any clubs matching your search criteria. Try adjusting your filters or search terms.</p>
+      {% if current_user.is_authenticated and current_user.role in ['Student', 'ClubLeader'] %}
+      <a href="{{ url_for('clubs.request_club') }}" class="create-action">
+        <i class="fas fa-plus"></i>Request a New Club
+      </a>
+      {% endif %}
+    </div>
+
+    <!-- Empty State (No Clubs at all) -->
+    {% if not clubs %}
+    <div class="no-results">
+      <i class="fas fa-users"></i>
+      <h3>No clubs available</h3>
+      <p>Be the first to create a club and start building your community!</p>
+      {% if current_user.is_authenticated and current_user.role == 'Admin' %}
+      <a href="{{ url_for('clubs.create_club') }}" class="create-action">
+        <i class="fas fa-plus"></i>Create First Club
+      </a>
+      {% elif current_user.is_authenticated and current_user.role in ['Student', 'ClubLeader'] %}
+      <a href="{{ url_for('clubs.request_club') }}" class="create-action">
+        <i class="fas fa-paper-plane"></i>Request a Club
+      </a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+class ClubSearch {
+  constructor() {
+    this.searchInput = document.getElementById('searchInput');
+    this.searchClear = document.getElementById('searchClear');
+    this.categoryFilter = document.getElementById('categoryFilter');
+    this.sortFilter = document.getElementById('sortFilter');
+    this.viewMode = document.getElementById('viewMode');
+    this.clubsGrid = document.getElementById('clubsGrid');
+    this.noResults = document.getElementById('noResults');
+    this.resultCount = document.getElementById('resultCount');
+    this.searchTime = document.getElementById('searchTime');
+    this.loadingOverlay = document.getElementById('loadingOverlay');
+    
+    this.clubs = Array.from(document.querySelectorAll('.club-card'));
+    this.totalClubs = this.clubs.length;
+    
+    this.init();
+  }
+  
+  init() {
+    // Event listeners
+    this.searchInput.addEventListener('input', () => this.handleSearch());
+    this.searchClear.addEventListener('click', () => this.clearSearch());
+    this.categoryFilter.addEventListener('change', () => this.handleFilter());
+    this.sortFilter.addEventListener('change', () => this.handleSort());
+    this.viewMode.addEventListener('change', () => this.handleViewMode());
+    
+    // Initialize
+    this.updateSearchStats();
+  }
+  
+  handleSearch() {
+    const query = this.searchInput.value.trim();
+    
+    // Show/hide clear button
+    this.searchClear.classList.toggle('show', query.length > 0);
+    
+    // Simulate search delay for better UX
+    clearTimeout(this.searchTimeout);
+    this.searchTimeout = setTimeout(() => {
+      this.performSearch();
+    }, 150);
+  }
+  
+  performSearch() {
+    const startTime = performance.now();
+    
+    const query = this.searchInput.value.toLowerCase().trim();
+    const category = this.categoryFilter.value.toLowerCase();
+    
+    let visibleCount = 0;
+    
+    this.clubs.forEach(club => {
+      const matchesSearch = this.matchesSearchQuery(club, query);
+      const matchesCategory = !category || club.dataset.category === category;
+      const shouldShow = matchesSearch && matchesCategory;
+      
+      if (shouldShow) {
+        visibleCount++;
+        this.showClub(club);
+        this.highlightSearchTerms(club, query);
+      } else {
+        this.hideClub(club);
+      }
+    });
+    
+    // Update UI
+    this.updateSearchStats(visibleCount, performance.now() - startTime);
+    this.toggleNoResults(visibleCount === 0);
+    
+    // Apply current sorting
+    this.applySorting();
+  }
+  
+  matchesSearchQuery(club, query) {
+    if (!query) return true;
+    
+    const searchableElements = club.querySelectorAll('[data-searchable]');
+    const searchText = Array.from(searchableElements)
+      .map(el => el.textContent.toLowerCase())
+      .join(' ');
+    
+    const categoryText = club.dataset.category;
+    const combinedText = `${searchText} ${categoryText}`;
+    
+    // Support multi-word search
+    const queryWords = query.split(' ').filter(word => word.length > 0);
+    return queryWords.every(word => combinedText.includes(word));
+  }
+  
+  highlightSearchTerms(club, query) {
+    if (!query) return;
+    
+    const searchableElements = club.querySelectorAll('[data-searchable]');
+    const queryWords = query.split(' ').filter(word => word.length > 1);
+    
+    searchableElements.forEach(element => {
+      let html = element.textContent;
+      
+      queryWords.forEach(word => {
+        const regex = new RegExp(`(${this.escapeRegex(word)})`, 'gi');
+        html = html.replace(regex, '<span class="search-highlight">$1</span>');
+      });
+      
+      element.innerHTML = html;
+    });
+  }
+  
+  clearSearch() {
+    this.searchInput.value = '';
+    this.searchClear.classList.remove('show');
+    this.performSearch();
+    this.searchInput.focus();
+  }
+  
+  handleFilter() {
+    this.performSearch();
+  }
+  
+  handleSort() {
+    this.applySorting();
+  }
+  
+  applySorting() {
+    const sortBy = this.sortFilter.value;
+    const visibleClubs = this.clubs.filter(club => !club.classList.contains('hidden'));
+    
+    visibleClubs.sort((a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return a.dataset.name.localeCompare(b.dataset.name);
+        case 'name-desc':
+          return b.dataset.name.localeCompare(a.dataset.name);
+        case 'category':
+          return a.dataset.category.localeCompare(b.dataset.category);
+        case 'newest':
+          return new Date(b.dataset.created) - new Date(a.dataset.created);
+        case 'oldest':
+          return new Date(a.dataset.created) - new Date(b.dataset.created);
+        default:
+          return 0;
+      }
+    });
+    
+    // Reorder DOM elements
+    visibleClubs.forEach(club => {
+      this.clubsGrid.appendChild(club);
+    });
+  }
+  
+  handleViewMode() {
+    const mode = this.viewMode.value;
+    this.clubsGrid.className = mode === 'list' ? 'clubs-list' : 'clubs-grid';
+  }
+  
+  showClub(club) {
+    club.classList.add('filtering');
+    club.classList.remove('hidden');
+    club.style.display = 'block';
+  }
+  
+  hideClub(club) {
+    club.classList.add('filtering');
+    club.classList.add('hidden');
+    setTimeout(() => {
+      if (club.classList.contains('hidden')) {
+        club.style.display = 'none';
+      }
+    }, 400);
+  }
+  
+  updateSearchStats(count = this.totalClubs, searchTime = 0) {
+    this.resultCount.textContent = count;
+    
+    if (searchTime > 0) {
+      this.searchTime.textContent = `(${searchTime.toFixed(0)}ms)`;
+    } else {
+      this.searchTime.textContent = '';
+    }
+  }
+  
+  toggleNoResults(show) {
+    this.noResults.style.display = show ? 'block' : 'none';
+    this.clubsGrid.style.display = show ? 'none' : 'grid';
+  }
+  
+  escapeRegex(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  new ClubSearch();
+});
+</script>
+{% endblock %}

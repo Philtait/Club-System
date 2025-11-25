@@ -1,0 +1,414 @@
+<!-- File: app/templates/membership/club_members.html (Simplified Compatible Version) -->
+{% extends "base.html" %}
+{% block title %}{{ club.name }} - Members{% endblock %}
+
+{% block extra_head %}
+<style>
+  .member-card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: #ffffff;
+    transition: box-shadow 0.2s;
+  }
+  .member-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .status-pending { background: #fff3cd; color: #856404; }
+  .status-approved { background: #d4edda; color: #155724; }
+  .status-rejected { background: #f8d7da; color: #721c24; }
+  .status-removed { background: #f8d7da; color: #721c24; }
+  .stats-overview {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+  .tab-button {
+    background: none;
+    border: none;
+    padding: 1rem 1.5rem;
+    margin-right: 1rem;
+    color: #6c757d;
+    font-weight: 500;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s;
+  }
+  .tab-button.active {
+    color: #007bff;
+    border-bottom-color: #007bff;
+  }
+  .tab-content {
+    display: none;
+  }
+  .tab-content.active {
+    display: block;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+      <h2>
+        <i class="fas fa-users me-2"></i>
+        {{ club.name }} - Members
+      </h2>
+      <p class="text-muted">Manage club memberships and applications</p>
+    </div>
+    <div>
+      <a href="{{ url_for('clubs.view_club', club_id=club.club_id) }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>
+        Back to Club
+      </a>
+      <a href="{{ url_for('membership.membership_requests', club_id=club.club_id) }}" class="btn btn-warning">
+        <i class="fas fa-clock me-2"></i>
+        Pending Requests
+        {% if pending_members %}
+          <span class="badge bg-white text-warning ms-1">{{ pending_members|length }}</span>
+        {% endif %}
+      </a>
+    </div>
+  </div>
+
+  <!-- Statistics Overview -->
+  <div class="stats-overview">
+    <div class="row text-center">
+      <div class="col-md-3">
+        <h3 class="mb-1">{{ approved_members|length if approved_members else 0 }}</h3>
+        <p class="mb-0">Active Members</p>
+      </div>
+      <div class="col-md-3">
+        <h3 class="mb-1">{{ pending_members|length if pending_members else 0 }}</h3>
+        <p class="mb-0">Pending Applications</p>
+      </div>
+      <div class="col-md-3">
+        <h3 class="mb-1">{{ rejected_members|length if rejected_members else 0 }}</h3>
+        <p class="mb-0">Rejected Applications</p>
+      </div>
+      <div class="col-md-3">
+        <h3 class="mb-1">{{ former_members|length if former_members else 0 }}</h3>
+        <p class="mb-0">Former Members</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="border-bottom mb-4">
+    <button class="tab-button active" onclick="showTab('approved')">
+      Active Members
+      {% if approved_members %}
+        <span class="badge bg-success ms-2">{{ approved_members|length }}</span>
+      {% endif %}
+    </button>
+    <button class="tab-button" onclick="showTab('pending')">
+      Pending Applications
+      {% if pending_members %}
+        <span class="badge bg-warning ms-2">{{ pending_members|length }}</span>
+      {% endif %}
+    </button>
+    <button class="tab-button" onclick="showTab('rejected')">
+      Rejected Applications
+      {% if rejected_members %}
+        <span class="badge bg-danger ms-2">{{ rejected_members|length }}</span>
+      {% endif %}
+    </button>
+    {% if former_members %}
+    <button class="tab-button" onclick="showTab('former')">
+      Former Members
+      <span class="badge bg-secondary ms-2">{{ former_members|length }}</span>
+    </button>
+    {% endif %}
+  </div>
+
+  <!-- Active Members Tab -->
+  <div id="approved-tab" class="tab-content active">
+    <h4>Active Members</h4>
+    {% if approved_members %}
+      {% for membership in approved_members %}
+        <div class="member-card">
+          <div class="row align-items-center">
+            <div class="col-md-4">
+              <div class="d-flex align-items-center">
+                <img src="{{ url_for('static', filename='images/profiles/' + (membership.student.user.profile_image or 'default-profile.png')) }}" 
+                     alt="{{ membership.student.user.first_name }}" 
+                     class="rounded-circle me-3" 
+                     width="50" height="50">
+                <div>
+                  <h6 class="mb-0">{{ membership.student.user.first_name }} {{ membership.student.user.last_name }}</h6>
+                  <small class="text-muted">{{ membership.student.user.email }}</small>
+                  {% if membership.student.user.phone %}
+                    <br><small class="text-muted">{{ membership.student.user.phone }}</small>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-3">
+              <p class="mb-1"><strong>Program:</strong> {{ membership.student.program or 'N/A' }}</p>
+              <p class="mb-0"><strong>Year:</strong> {{ membership.student.year_of_study or 'N/A' }}</p>
+            </div>
+            
+            <div class="col-md-3">
+              <p class="mb-1"><strong>Joined:</strong> {{ membership.joined_on.strftime('%B %d, %Y') }}</p>
+              <span class="status-badge status-approved">ACTIVE</span>
+            </div>
+            
+            <div class="col-md-2">
+              <button class="btn btn-warning btn-sm" onclick="showRemoveModal({{ membership.membership_id }}, '{{ membership.student.user.first_name }} {{ membership.student.user.last_name }}')">
+                <i class="fas fa-user-minus me-1"></i>
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="text-center py-5">
+        <i class="fas fa-users fa-4x text-muted mb-3"></i>
+        <h5>No Active Members</h5>
+        <p class="text-muted">This club doesn't have any approved members yet.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Pending Applications Tab -->
+  <div id="pending-tab" class="tab-content">
+    <h4>Pending Applications</h4>
+    {% if pending_members %}
+      <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        <a href="{{ url_for('membership.membership_requests', club_id=club.club_id) }}" class="alert-link">
+          Click here to review and approve pending applications
+        </a>
+      </div>
+      
+      {% for membership in pending_members %}
+        <div class="member-card">
+          <div class="row align-items-center">
+            <div class="col-md-4">
+              <div class="d-flex align-items-center">
+                <img src="{{ url_for('static', filename='images/profiles/' + (membership.student.user.profile_image or 'default-profile.png')) }}" 
+                     alt="{{ membership.student.user.first_name }}" 
+                     class="rounded-circle me-3" 
+                     width="50" height="50">
+                <div>
+                  <h6 class="mb-0">{{ membership.student.user.first_name }} {{ membership.student.user.last_name }}</h6>
+                  <small class="text-muted">{{ membership.student.user.email }}</small>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-3">
+              <p class="mb-1"><strong>Program:</strong> {{ membership.student.program or 'N/A' }}</p>
+              <p class="mb-0"><strong>Year:</strong> {{ membership.student.year_of_study or 'N/A' }}</p>
+            </div>
+            
+            <div class="col-md-3">
+              <p class="mb-1"><strong>Applied:</strong> {{ membership.joined_on.strftime('%B %d, %Y') }}</p>
+              <span class="status-badge status-pending">PENDING</span>
+            </div>
+            
+            <div class="col-md-2">
+              <a href="{{ url_for('membership.membership_requests', club_id=club.club_id) }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-eye me-1"></i>
+                Review
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="text-center py-5">
+        <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+        <h5>No Pending Applications</h5>
+        <p class="text-muted">All membership applications have been processed.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Rejected Applications Tab -->
+  <div id="rejected-tab" class="tab-content">
+    <h4>Rejected Applications</h4>
+    {% if rejected_members %}
+      {% for membership in rejected_members %}
+        <div class="member-card">
+          <div class="row align-items-center">
+            <div class="col-md-4">
+              <div class="d-flex align-items-center">
+                <img src="{{ url_for('static', filename='images/profiles/' + (membership.student.user.profile_image or 'default-profile.png')) }}" 
+                     alt="{{ membership.student.user.first_name }}" 
+                     class="rounded-circle me-3" 
+                     width="50" height="50">
+                <div>
+                  <h6 class="mb-0">{{ membership.student.user.first_name }} {{ membership.student.user.last_name }}</h6>
+                  <small class="text-muted">{{ membership.student.user.email }}</small>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-3">
+              <p class="mb-1"><strong>Applied:</strong> {{ membership.joined_on.strftime('%B %d, %Y') }}</p>
+              <p class="mb-0"><strong>Program:</strong> {{ membership.student.program or 'N/A' }}</p>
+            </div>
+            
+            <div class="col-md-3">
+              <span class="status-badge status-rejected">REJECTED</span>
+            </div>
+            
+            <div class="col-md-2">
+              <form method="POST" action="{{ url_for('membership.approve_membership', membership_id=membership.membership_id) }}" class="d-inline">
+                <button type="submit" class="btn btn-success btn-sm">
+                  <i class="fas fa-undo me-1"></i>
+                  Approve
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="text-center py-5">
+        <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+        <h5>No Rejected Applications</h5>
+        <p class="text-muted">No applications have been rejected for this club.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Former Members Tab -->
+  {% if former_members %}
+  <div id="former-tab" class="tab-content">
+    <h4>Former Members</h4>
+    {% for membership in former_members %}
+      <div class="member-card">
+        <div class="row align-items-center">
+          <div class="col-md-4">
+            <div class="d-flex align-items-center">
+              <img src="{{ url_for('static', filename='images/profiles/' + (membership.student.user.profile_image or 'default-profile.png')) }}" 
+                   alt="{{ membership.student.user.first_name }}" 
+                   class="rounded-circle me-3" 
+                   width="50" height="50">
+              <div>
+                <h6 class="mb-0">{{ membership.student.user.first_name }} {{ membership.student.user.last_name }}</h6>
+                <small class="text-muted">{{ membership.student.user.email }}</small>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-3">
+            <p class="mb-1"><strong>Joined:</strong> {{ membership.joined_on.strftime('%b %d, %Y') }}</p>
+            <p class="mb-0"><strong>Left:</strong> {{ membership.left_on.strftime('%b %d, %Y') }}</p>
+          </div>
+          
+          <div class="col-md-3">
+            <span class="status-badge status-removed">
+              {{ membership.status.upper() }}
+            </span>
+          </div>
+          
+          <div class="col-md-2">
+            <!-- Optional: Re-invite functionality -->
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+<!-- Remove Member Modal -->
+<div class="modal fade" id="removeMemberModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-user-minus me-2"></i>
+          Remove Member
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="removeMemberForm" method="POST" action="">
+        <div class="modal-body">
+          <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            You are about to remove <strong id="memberName"></strong> from {{ club.name }}.
+          </div>
+          
+          <div class="mb-3">
+            <label for="removalReason" class="form-label">Reason for removal (required):</label>
+            <textarea name="reason" id="removalReason" class="form-control" rows="3" 
+                      placeholder="Provide a reason for removing this member..." required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">
+            <i class="fas fa-user-minus me-2"></i>
+            Remove Member
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Tab functionality
+function showTab(tabName) {
+  // Hide all tabs
+  document.querySelectorAll('.tab-content').forEach(tab => {
+    tab.classList.remove('active');
+  });
+  
+  // Remove active class from all buttons
+  document.querySelectorAll('.tab-button').forEach(button => {
+    button.classList.remove('active');
+  });
+  
+  // Show selected tab
+  document.getElementById(tabName + '-tab').classList.add('active');
+  
+  // Add active class to clicked button
+  event.target.classList.add('active');
+}
+
+// Show remove member modal
+function showRemoveModal(membershipId, memberName) {
+  document.getElementById('memberName').textContent = memberName;
+  document.getElementById('removeMemberForm').action = 
+    "{{ url_for('membership.remove_member', membership_id=0) }}".replace('0', membershipId);
+  
+  new bootstrap.Modal(document.getElementById('removeMemberModal')).show();
+}
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+  // Add hover effects to member cards
+  const memberCards = document.querySelectorAll('.member-card');
+  memberCards.forEach(card => {
+    card.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-2px)';
+      this.style.transition = 'transform 0.2s ease';
+    });
+    
+    card.addEventListener('mouseleave', function() {
+      this.style.transform = 'translateY(0)';
+    });
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,303 @@
+{% extends "base.html" %}
+{% block title %}Payment History{% endblock %}
+
+{% block extra_head %}
+<style>
+  .payment-card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: #ffffff;
+    transition: box-shadow 0.2s;
+  }
+  .payment-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .status-completed {
+    background: #d4edda;
+    color: #155724;
+  }
+  .status-pending {
+    background: #fff3cd;
+    color: #856404;
+  }
+  .status-failed {
+    background: #f8d7da;
+    color: #721c24;
+  }
+  .payment-type-badge {
+    background: #2c5aa0;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #6c757d;
+  }
+  .empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="row">
+    <div class="col-md-10 mx-auto">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+          <i class="fas fa-history me-2"></i>
+          Payment History
+        </h2>
+        <div>
+          <a href="{{ url_for('payments.membership_payment') }}" class="btn btn-primary">
+            <i class="fas fa-credit-card me-2"></i>
+            Make New Payment
+          </a>
+        </div>
+      </div>
+
+      {% if payments %}
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle me-2"></i>
+          Showing {{ payments|length }} payment(s). Click on any payment to view details.
+        </div>
+
+        {% for payment in payments %}
+          <div class="payment-card">
+            <div class="row align-items-center">
+              <div class="col-md-8">
+                <div class="d-flex align-items-start">
+                  <div class="me-3">
+                    <i class="fas fa-credit-card fa-2x text-muted"></i>
+                  </div>
+                  <div class="flex-grow-1">
+                    <div class="d-flex align-items-center mb-2">
+                      <h6 class="mb-0 me-2">
+                        {% if payment.purpose == 'Membership' %}
+                          Club Membership Payment
+                        {% elif payment.purpose == 'Event' %}
+                          Event Registration Payment
+                        {% else %}
+                          {{ payment.purpose }} Payment
+                        {% endif %}
+                      </h6>
+                      <span class="payment-type-badge">
+                        PESAPAL
+                      </span>
+                    </div>
+
+                    <div class="row text-muted small">
+                      <div class="col-sm-6">
+                        <i class="fas fa-calendar me-1"></i>
+                        {{ payment.dateCreated.strftime('%B %d, %Y at %I:%M %p') }}
+                      </div>
+                      <div class="col-sm-6">
+                        <i class="fas fa-hashtag me-1"></i>
+                        Payment #{{ payment.paymentId }}
+                        {% if payment.receiptNumber %}
+                          ({{ payment.receiptNumber }})
+                        {% endif %}
+                      </div>
+                    </div>
+
+                    {% if payment.paymentMethod %}
+                    <div class="text-muted small mt-1">
+                      <i class="fas fa-credit-card me-1"></i>
+                      {{ payment.paymentMethod }}
+                    </div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-4 text-end">
+                <div class="mb-2">
+                  <h5 class="mb-0">KES {{ "{:,.2f}".format(payment.amount) }}</h5>
+                </div>
+
+                <div class="mb-2">
+                  <span class="status-badge status-{{ payment.status.lower() }}">
+                    {{ payment.status.upper() }}
+                  </span>
+                </div>
+
+                {% if payment.status == 'Completed' %}
+                  <div>
+                    <button class="btn btn-sm btn-outline-primary"
+                            onclick="viewReceipt({{ payment.paymentId }})">
+                      <i class="fas fa-receipt me-1"></i>
+                      View Receipt
+                    </button>
+                  </div>
+                {% elif payment.status == 'Pending' %}
+                  <div>
+                    <a href="{{ url_for('payments.payment_iframe', payment_id=payment.paymentId) }}" 
+                       class="btn btn-sm btn-warning">
+                      <i class="fas fa-credit-card me-1"></i>
+                      Complete Payment
+                    </a>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+
+      {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+          <i class="fas fa-receipt"></i>
+          <h4>No Payments Yet</h4>
+          <p class="mb-4">You haven't made any payments yet. Start by paying for a club membership or event registration.</p>
+          <div>
+            <a href="{{ url_for('payments.membership_payment') }}" class="btn btn-primary me-2">
+              <i class="fas fa-users me-2"></i>
+              Pay Membership
+            </a>
+            <a href="{{ url_for('events.list_events') }}" class="btn btn-outline-primary">
+              <i class="fas fa-calendar me-2"></i>
+              Browse Events
+            </a>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Receipt Modal -->
+<div class="modal fade" id="receiptModal" tabindex="-1" aria-labelledby="receiptModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="receiptModalLabel">
+          <i class="fas fa-receipt me-2"></i>
+          Payment Receipt
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="receiptContent">
+        <!-- Receipt content will be loaded here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-primary" onclick="window.print()">
+          <i class="fas fa-print me-2"></i>
+          Print Receipt
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function viewReceipt(paymentId) {
+  // Create payment data object
+  const paymentsData = {
+    {% for payment in payments %}
+    {{ payment.paymentId }}: {
+      paymentId: {{ payment.paymentId }},
+      purpose: "{{ payment.purpose }}",
+      amount: {{ payment.amount }},
+      status: "{{ payment.status }}",
+      receiptNumber: "{{ payment.receiptNumber or '' }}",
+      paymentMethod: "{{ payment.paymentMethod or '' }}",
+      dateCreated: "{{ payment.dateCreated.isoformat() }}"
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  };
+  
+  const payment = paymentsData[paymentId];
+  
+  if (!payment) {
+    alert('Payment not found');
+    return;
+  }
+
+  const receiptContent = `
+    <div class="receipt-container">
+      <div class="text-center mb-4">
+        <h4>Payment Receipt</h4>
+        <p class="text-muted">Transaction Confirmation</p>
+      </div>
+
+      <table class="table table-borderless">
+        <tr>
+          <td><strong>Payment ID:</strong></td>
+          <td>#${payment.paymentId}</td>
+        </tr>
+        <tr>
+          <td><strong>Purpose:</strong></td>
+          <td>${payment.purpose}</td>
+        </tr>
+        <tr>
+          <td><strong>Amount:</strong></td>
+          <td>KES ${payment.amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+        </tr>
+        <tr>
+          <td><strong>Status:</strong></td>
+          <td><span class="badge bg-success">${payment.status}</span></td>
+        </tr>
+        ${payment.receiptNumber ? `
+        <tr>
+          <td><strong>Receipt Number:</strong></td>
+          <td>${payment.receiptNumber}</td>
+        </tr>
+        ` : ''}
+        ${payment.paymentMethod ? `
+        <tr>
+          <td><strong>Payment Method:</strong></td>
+          <td>${payment.paymentMethod}</td>
+        </tr>
+        ` : ''}
+        <tr>
+          <td><strong>Date:</strong></td>
+          <td>${new Date(payment.dateCreated).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          })}</td>
+        </tr>
+      </table>
+
+      <div class="text-center mt-4">
+        <small class="text-muted">
+          Thank you for your payment. Keep this receipt for your records.
+        </small>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('receiptContent').innerHTML = receiptContent;
+  new bootstrap.Modal(document.getElementById('receiptModal')).show();
+}
+
+// Auto-refresh pending payments every 30 seconds
+setInterval(function() {
+  const pendingPayments = document.querySelectorAll('.status-pending');
+  if (pendingPayments.length > 0) {
+    console.log('Checking for payment updates...');
+    // Uncomment the line below to enable auto-refresh
+    // window.location.reload();
+  }
+}, 30000);
+</script>
+{% endblock %}

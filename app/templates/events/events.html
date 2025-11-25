@@ -1,0 +1,652 @@
+<!-- File: app/templates/events/events.html -->
+{% extends "base.html" %}
+{% block title %}Events | Club Management System{% endblock %}
+
+{% block extra_head %}
+<style>
+  .events-wrapper {
+    background: #f8fafc;
+    min-height: calc(100vh - 120px);
+    padding: 40px 0;
+  }
+
+  .page-header {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 32px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .page-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, #10b981, #059669);
+  }
+
+  .header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+
+  .header-info h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .header-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+  }
+
+  .header-info p {
+    color: #64748b;
+    font-size: 16px;
+    margin: 0;
+  }
+
+  .create-button {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .create-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .create-button:hover::before {
+    left: 100%;
+  }
+
+  .create-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+    color: white;
+  }
+
+  .events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  .event-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+    transition: all 0.3s ease;
+    position: relative;
+    height: fit-content;
+  }
+
+  .event-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  }
+
+  .event-image {
+    height: 200px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .event-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .event-card:hover .event-image img {
+    transform: scale(1.05);
+  }
+
+  .event-image-placeholder {
+    color: white;
+    font-size: 3rem;
+    opacity: 0.7;
+  }
+
+  .event-date-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(255, 255, 255, 0.95);
+    color: #1e293b;
+    padding: 8px 12px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
+  }
+
+  .badge-day {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+
+  .badge-month {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748b;
+  }
+
+  .event-content {
+    padding: 24px;
+  }
+
+  .event-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 8px;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .event-club {
+    color: #3b82f6;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .event-description {
+    color: #475569;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 16px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .event-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .event-time {
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .event-location {
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .event-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn-view-event {
+    background: #1e293b;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    flex: 1;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .btn-view-event:hover {
+    background: #334155;
+    color: white;
+    transform: translateY(-1px);
+  }
+
+  .btn-register {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-register:hover {
+    background: #059669;
+    transform: translateY(-1px);
+  }
+
+  .upcoming-indicator {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+  }
+
+  .empty-state i {
+    font-size: 4rem;
+    color: #cbd5e1;
+    margin-bottom: 24px;
+  }
+
+  .empty-state h3 {
+    color: #475569;
+    margin-bottom: 12px;
+    font-size: 1.5rem;
+  }
+
+  .empty-state p {
+    color: #64748b;
+    margin-bottom: 32px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+  }
+
+  .filters-section {
+    background: white;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    border: 1px solid #f1f5f9;
+  }
+
+  .filters-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 12px;
+  }
+
+  .filter-chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .filter-chip {
+    background: #f8fafc;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .filter-chip:hover,
+  .filter-chip.active {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+  }
+
+  .stats-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f8fafc;
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    color: #64748b;
+  }
+
+  .events-count {
+    font-weight: 600;
+    color: #374151;
+  }
+
+  /* Mobile Responsiveness */
+  @media (max-width: 768px) {
+    .events-wrapper {
+      padding: 20px 0;
+    }
+
+    .page-header {
+      padding: 24px 20px;
+      margin-bottom: 24px;
+    }
+
+    .header-content {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .header-info h1 {
+      font-size: 1.5rem;
+    }
+
+    .events-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .event-content {
+      padding: 20px;
+    }
+
+    .event-meta {
+      flex-direction: column;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .event-actions {
+      flex-direction: column;
+    }
+
+    .filters-section {
+      padding: 16px 20px;
+    }
+
+    .stats-bar {
+      flex-direction: column;
+      gap: 8px;
+      text-align: center;
+    }
+  }
+
+  /* Animation for new events */
+  .event-card.new-event {
+    animation: slideInUp 0.6s ease-out;
+  }
+
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="events-wrapper">
+  <div class="container">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="header-content">
+        <div class="header-info">
+          <h1>
+            <div class="header-icon">
+              <i class="fas fa-calendar-alt"></i>
+            </div>
+            Upcoming Events
+          </h1>
+          <p>Discover exciting events happening across all student clubs</p>
+        </div>
+        {% if current_user.is_authenticated and current_user.role in ['Admin','ClubLeader'] %}
+        <a href="{{ url_for('events.create_event') }}" class="create-button">
+          <i class="fas fa-plus"></i>
+          Create New Event
+        </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    {% if events %}
+    <div class="filters-section">
+      <div class="filters-title">Filter by Category</div>
+      <div class="filter-chips">
+        <div class="filter-chip active" data-filter="all">All Events</div>
+        <div class="filter-chip" data-filter="academic">Academic</div>
+        <div class="filter-chip" data-filter="sports">Sports</div>
+        <div class="filter-chip" data-filter="cultural">Cultural</div>
+        <div class="filter-chip" data-filter="social">Social</div>
+        <div class="filter-chip" data-filter="workshop">Workshop</div>
+      </div>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+      <span class="events-count">Showing {{ events|length }} upcoming events</span>
+      <span>Stay tuned for more amazing events!</span>
+    </div>
+    {% endif %}
+
+    <!-- Events Grid -->
+    {% if events %}
+    <div class="events-grid">
+      {% for ev in events %}
+      <div class="event-card new-event" data-category="{{ ev.club.category.lower() if ev.club.category else 'general' }}">
+        <!-- Event Image -->
+        <div class="event-image">
+          {% if ev.image_url %}
+            <img src="{{ url_for('static', filename=ev.image_url) }}" alt="{{ ev.title }}">
+          {% else %}
+            <i class="fas fa-calendar-alt event-image-placeholder"></i>
+          {% endif %}
+
+          <!-- Date Badge -->
+          <div class="event-date-badge">
+            <div class="badge-day">{{ ev.event_date.strftime('%d') }}</div>
+            <div class="badge-month">{{ ev.event_date.strftime('%b') }}</div>
+          </div>
+
+          <!-- Upcoming Indicator -->
+          <div class="upcoming-indicator">
+            {% set days_until = (ev.event_date.date() - now.date()).days if ev.event_date else 0 %}
+            {% if days_until == 0 %}
+              Today
+            {% elif days_until == 1 %}
+              Tomorrow
+            {% elif days_until <= 7 %}
+              {{ days_until }} days
+            {% else %}
+              Upcoming
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Event Content -->
+        <div class="event-content">
+          <h3 class="event-title">{{ ev.title }}</h3>
+
+          <div class="event-club">
+            <i class="fas fa-users"></i>
+            {{ ev.club.name }}
+          </div>
+
+          <p class="event-description">
+            {{ ev.description[:120] }}{% if ev.description|length > 120 %}...{% endif %}
+          </p>
+
+          <div class="event-meta">
+            <div class="event-time">
+              <i class="fas fa-clock"></i>
+              {{ ev.event_date.strftime('%I:%M %p') }}
+            </div>
+            <div class="event-location">
+              <i class="fas fa-map-marker-alt"></i>
+              {{ ev.location[:20] }}{% if ev.location|length > 20 %}...{% endif %}
+            </div>
+          </div>
+
+          <div class="event-actions">
+            <a href="{{ url_for('events.view_event', event_id=ev.event_id) }}"
+               class="btn-view-event">
+              <i class="fas fa-eye"></i>
+              View Details
+            </a>
+            {% if current_user.is_authenticated and current_user.role == 'Student' %}
+            <a href="{{ url_for('events.view_event', event_id=ev.event_id) }}"
+               class="btn-register">
+              <i class="fas fa-user-plus"></i>
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="empty-state">
+      <i class="fas fa-calendar-times"></i>
+      <h3>No Upcoming Events</h3>
+      <p>There are no upcoming events scheduled at the moment. Check back later or create your own event to get the community excited!</p>
+      {% if current_user.is_authenticated and current_user.role in ['Admin','ClubLeader'] %}
+      <a href="{{ url_for('events.create_event') }}" class="create-button">
+        <i class="fas fa-plus"></i>
+        Create First Event
+      </a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Filter functionality
+  const filterChips = document.querySelectorAll('.filter-chip');
+  const eventCards = document.querySelectorAll('.event-card');
+
+  filterChips.forEach(chip => {
+    chip.addEventListener('click', function() {
+      // Remove active class from all chips
+      filterChips.forEach(c => c.classList.remove('active'));
+
+      // Add active class to clicked chip
+      this.classList.add('active');
+
+      const filterValue = this.dataset.filter;
+      let visibleCount = 0;
+
+      // Filter events
+      eventCards.forEach(card => {
+        const category = card.dataset.category;
+
+        if (filterValue === 'all' || category === filterValue) {
+          card.style.display = 'block';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      // Update count
+      const countElement = document.querySelector('.events-count');
+      if (countElement) {
+        countElement.textContent = `Showing ${visibleCount} ${filterValue === 'all' ? 'upcoming' : filterValue} events`;
+      }
+    });
+  });
+
+  // Add staggered animation to event cards
+  eventCards.forEach((card, index) => {
+    card.style.animationDelay = `${index * 0.1}s`;
+  });
+});
+</script>
+{% endblock %}

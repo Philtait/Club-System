@@ -1,0 +1,385 @@
+<!-- File: app/templates/payments/admin_all.html -->
+{% extends "base.html" %}
+{% block title %}All Payments - Admin{% endblock %}
+
+{% block extra_head %}
+<style>
+  .payment-card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    background: #ffffff;
+    transition: box-shadow 0.2s;
+  }
+  .payment-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .payment-header {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-bottom: 1px solid #dee2e6;
+    border-radius: 8px 8px 0 0;
+  }
+  .payment-body {
+    padding: 1rem;
+  }
+  .status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .status-completed {
+    background: #d4edda;
+    color: #155724;
+    border-left: 4px solid #28a745;
+  }
+  .status-pending {
+    background: #fff3cd;
+    color: #856404;
+    border-left: 4px solid #ffc107;
+  }
+  .status-failed {
+    background: #f8d7da;
+    color: #721c24;
+    border-left: 4px solid #dc3545;
+  }
+  .filter-card {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .stats-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .stats-number {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+  }
+  .empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #6c757d;
+  }
+  .empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+  .pagination-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="row">
+    <div class="col-12">
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+          <i class="fas fa-list me-2"></i>
+          All Payments
+        </h2>
+        <div>
+          <a href="{{ url_for('payments.admin_pending_payments') }}" class="btn btn-warning me-2">
+            <i class="fas fa-clock me-1"></i>
+            Pending Only
+          </a>
+          <button onclick="exportPayments()" class="btn btn-success">
+            <i class="fas fa-download me-1"></i>
+            Export CSV
+          </button>
+        </div>
+      </div>
+
+      <!-- Statistics Cards -->
+      <div class="row mb-4">
+        {% set completed_count = payments | selectattr('status', 'equalto', 'Completed') | list | length %}
+        {% set pending_count = payments | selectattr('status', 'equalto', 'Pending') | list | length %}
+        {% set failed_count = payments | selectattr('status', 'equalto', 'Failed') | list | length %}
+        {% set total_amount = payments | selectattr('status', 'equalto', 'Completed') | sum(attribute='amount') %}
+
+        <div class="col-md-3">
+          <div class="stats-card">
+            <div class="stats-number">{{ payments|length }}</div>
+            <div>Total Payments</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stats-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+            <div class="stats-number">{{ completed_count }}</div>
+            <div>Completed</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stats-card" style="background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);">
+            <div class="stats-number">{{ pending_count }}</div>
+            <div>Pending</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stats-card" style="background: linear-gradient(135deg, #fd79a8 0%, #fdcb6e 100%);">
+            <div class="stats-number">KES {{ "{:,.0f}".format(total_amount) }}</div>
+            <div>Total Revenue</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-card">
+        <form method="GET" class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Status</label>
+            <select name="status" class="form-select">
+              <option value="">All Statuses</option>
+              <option value="Completed" {{ 'selected' if request.args.get('status') == 'Completed' }}>Completed</option>
+              <option value="Pending" {{ 'selected' if request.args.get('status') == 'Pending' }}>Pending</option>
+              <option value="Failed" {{ 'selected' if request.args.get('status') == 'Failed' }}>Failed</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Purpose</label>
+            <select name="purpose" class="form-select">
+              <option value="">All Purposes</option>
+              <option value="Membership" {{ 'selected' if request.args.get('purpose') == 'Membership' }}>Membership</option>
+              <option value="Event" {{ 'selected' if request.args.get('purpose') == 'Event' }}>Event</option>
+              <option value="Donation" {{ 'selected' if request.args.get('purpose') == 'Donation' }}>Donation</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Date From</label>
+            <input type="date" name="date_from" class="form-control" value="{{ request.args.get('date_from', '') }}">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Date To</label>
+            <input type="date" name="date_to" class="form-control" value="{{ request.args.get('date_to', '') }}">
+          </div>
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary me-2">
+              <i class="fas fa-filter me-1"></i>
+              Apply Filters
+            </button>
+            <a href="{{ url_for('payments.admin_all_payments') }}" class="btn btn-outline-secondary">
+              <i class="fas fa-times me-1"></i>
+              Clear Filters
+            </a>
+          </div>
+        </form>
+      </div>
+
+      <!-- Payments List -->
+      {% if payments %}
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle me-2"></i>
+          Showing {{ payments|length }} payment(s). Use filters above to narrow down results.
+        </div>
+
+        {% for payment in payments %}
+          <div class="payment-card status-{{ payment.status.lower() }}">
+            <div class="payment-header">
+              <div class="row align-items-center">
+                <div class="col-md-8">
+                  <h6 class="mb-1">
+                    <strong>Payment #{{ payment.paymentId }}</strong> - 
+                    {{ payment.student.user.first_name }} {{ payment.student.user.last_name }}
+                  </h6>
+                  <small class="text-muted">
+                    {% if payment.purpose == 'Membership' %}
+                      <i class="fas fa-users me-1"></i>
+                      Club Membership Payment
+                    {% elif payment.purpose == 'Event' %}
+                      <i class="fas fa-calendar me-1"></i>
+                      Event Registration Payment
+                    {% else %}
+                      <i class="fas fa-heart me-1"></i>
+                      {{ payment.purpose }} Payment
+                    {% endif %}
+                  </small>
+                </div>
+                <div class="col-md-4 text-end">
+                  <span class="status-badge status-{{ payment.status.lower() }}">
+                    {{ payment.status.upper() }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="payment-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <table class="table table-sm table-borderless">
+                    <tr>
+                      <td><strong>Student:</strong></td>
+                      <td>
+                        {{ payment.student.user.first_name }} {{ payment.student.user.last_name }}
+                        <br><small class="text-muted">{{ payment.student.user.email }}</small>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>Amount:</strong></td>
+                      <td><strong>KES {{ "{:,.2f}".format(payment.amount) }}</strong></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Purpose:</strong></td>
+                      <td>{{ payment.purpose }}</td>
+                    </tr>
+                    {% if payment.receiptNumber %}
+                    <tr>
+                      <td><strong>Receipt:</strong></td>
+                      <td><code>{{ payment.receiptNumber }}</code></td>
+                    </tr>
+                    {% endif %}
+                  </table>
+                </div>
+                <div class="col-md-6">
+                  <table class="table table-sm table-borderless">
+                    <tr>
+                      <td><strong>Date Created:</strong></td>
+                      <td>{{ payment.dateCreated.strftime('%B %d, %Y at %I:%M %p') }}</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Last Updated:</strong></td>
+                      <td>{{ payment.lastUpdated.strftime('%B %d, %Y at %I:%M %p') }}</td>
+                    </tr>
+                    {% if payment.paymentMethod %}
+                    <tr>
+                      <td><strong>Method:</strong></td>
+                      <td>{{ payment.paymentMethod }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                      <td><strong>Actions:</strong></td>
+                      <td>
+                        {% if payment.status == 'Pending' %}
+                          <form method="POST" action="{{ url_for('payments.admin_mark_completed', payment_id=payment.paymentId) }}"
+                                class="d-inline me-2"
+                                onsubmit="return confirm('Mark this payment as completed?')">
+                            <button type="submit" class="btn btn-sm btn-success">
+                              <i class="fas fa-check me-1"></i>
+                              Mark Completed
+                            </button>
+                          </form>
+                          <form method="POST" action="{{ url_for('payments.admin_mark_failed', payment_id=payment.paymentId) }}"
+                                class="d-inline"
+                                onsubmit="return confirm('Mark this payment as failed?')">
+                            <button type="submit" class="btn btn-sm btn-danger">
+                              <i class="fas fa-times me-1"></i>
+                              Mark Failed
+                            </button>
+                          </form>
+                        {% else %}
+                          <button class="btn btn-sm btn-outline-primary" onclick="viewPaymentDetails({{ payment.paymentId }})">
+                            <i class="fas fa-eye me-1"></i>
+                            View Details
+                          </button>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+
+      {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+          <i class="fas fa-receipt"></i>
+          <h4>No Payments Found</h4>
+          <p class="mb-4">No payments match your current filters.</p>
+          <a href="{{ url_for('payments.admin_all_payments') }}" class="btn btn-primary">
+            <i class="fas fa-refresh me-2"></i>
+            Clear Filters
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Payment Details Modal -->
+<div class="modal fade" id="paymentDetailsModal" tabindex="-1" aria-labelledby="paymentDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="paymentDetailsModalLabel">
+          <i class="fas fa-receipt me-2"></i>
+          Payment Details
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="paymentDetailsContent">
+        <!-- Payment details will be loaded here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-primary" onclick="window.print()">
+          <i class="fas fa-print me-2"></i>
+          Print
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function viewPaymentDetails(paymentId) {
+  // This would typically fetch payment details via AJAX
+  // For now, we'll show a simple modal
+  const modal = new bootstrap.Modal(document.getElementById('paymentDetailsModal'));
+  document.getElementById('paymentDetailsContent').innerHTML = `
+    <div class="text-center">
+      <i class="fas fa-info-circle fa-3x text-primary mb-3"></i>
+      <h5>Payment ID: ${paymentId}</h5>
+      <p>Detailed payment information would be displayed here.</p>
+    </div>
+  `;
+  modal.show();
+}
+
+function exportPayments() {
+  // Get current filters
+  const params = new URLSearchParams(window.location.search);
+  params.set('export', 'csv');
+  
+  // Create download link
+  const link = document.createElement('a');
+  link.href = window.location.pathname + '?' + params.toString();
+  link.download = 'payments_export.csv';
+  link.click();
+}
+
+// Auto-refresh every 60 seconds for pending payments
+setInterval(function() {
+  const pendingCount = document.querySelectorAll('.status-pending').length;
+  if (pendingCount > 0) {
+    console.log('Auto-checking for payment updates...');
+    // Uncomment the line below to enable auto-refresh
+    // window.location.reload();
+  }
+}, 60000);
+
+// Initialize tooltips
+document.addEventListener('DOMContentLoaded', function() {
+  const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl);
+  });
+});
+</script>
+{% endblock %}

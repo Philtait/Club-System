@@ -1,0 +1,222 @@
+<!-- File: app/templates/payments/success.html (Updated - Replace pesapal_success.html) -->
+{% extends "base.html" %}
+{% block title %}Payment Successful{% endblock %}
+
+{% block extra_head %}
+<style>
+  .success-card {
+    border: 2px solid #28a745;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f8fff9 0%, #e8f5e8 100%);
+  }
+  .success-icon {
+    font-size: 4rem;
+    color: #28a745;
+    animation: bounce 1s ease-in-out;
+  }
+  @keyframes bounce {
+    0%, 20%, 60%, 100% {
+      transform: translateY(0);
+    }
+    40% {
+      transform: translateY(-10px);
+    }
+    80% {
+      transform: translateY(-5px);
+    }
+  }
+  .receipt-card {
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  .receipt-header {
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    padding: 1rem;
+    border-radius: 8px 8px 0 0;
+  }
+  .receipt-body {
+    padding: 1.5rem;
+  }
+  .receipt-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f1f3f4;
+  }
+  .receipt-row:last-child {
+    border-bottom: none;
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #28a745;
+  }
+  .status-badge {
+    background: #28a745;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <!-- Success Message -->
+      <div class="success-card p-4 mb-4 text-center">
+        <div class="success-icon mb-3">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <h2 class="text-success mb-3">Payment Successful!</h2>
+        <p class="lead mb-0">
+          Your payment has been processed successfully through Pesapal.
+        </p>
+      </div>
+
+      <!-- Payment Receipt -->
+      <div class="receipt-card">
+        <div class="receipt-header">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+              <i class="fas fa-receipt me-2"></i>
+              Payment Receipt
+            </h5>
+            <span class="status-badge">COMPLETED</span>
+          </div>
+        </div>
+
+        <div class="receipt-body">
+          <div class="receipt-row">
+            <span>Payment ID:</span>
+            <span><strong>#{{ payment.paymentId }}</strong></span>
+          </div>
+
+          <div class="receipt-row">
+            <span>Student:</span>
+            <span>{{ payment.student.user.first_name }} {{ payment.student.user.last_name }}</span>
+          </div>
+
+          <div class="receipt-row">
+            <span>Payment Purpose:</span>
+            <span>
+              {% if payment.purpose == 'Membership' %}
+                {% set club = payment.student.memberships|selectattr('club_id', 'equalto', payment.relatedId)|first %}
+                Club Membership - {{ club.club.name if club else 'Unknown Club' }}
+              {% elif payment.purpose == 'Event' %}
+                {% set event_obj = [] %}
+                {% for event in payment.student.event_registrations %}
+                  {% if event.event_id == payment.relatedId %}
+                    {% set _ = event_obj.append(event.event) %}
+                  {% endif %}
+                {% endfor %}
+                Event Registration - {{ event_obj[0].title if event_obj else 'Unknown Event' }}
+              {% else %}
+                {{ payment.purpose }}
+              {% endif %}
+            </span>
+          </div>
+
+          <div class="receipt-row">
+            <span>Payment Date:</span>
+            <span>{{ payment.lastUpdated.strftime('%B %d, %Y at %I:%M %p') }}</span>
+          </div>
+
+          {% if payment.receiptNumber %}
+          <div class="receipt-row">
+            <span>Receipt Number:</span>
+            <span>{{ payment.receiptNumber }}</span>
+          </div>
+          {% endif %}
+
+          {% if payment.paymentMethod %}
+          <div class="receipt-row">
+            <span>Payment Method:</span>
+            <span>{{ payment.paymentMethod }}</span>
+          </div>
+          {% endif %}
+
+          <div class="receipt-row">
+            <span>Amount Paid:</span>
+            <span>KES {{ "{:,.2f}".format(payment.amount) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="mt-4 text-center">
+        <div class="row">
+          <div class="col-md-4 mb-2">
+            <button onclick="window.print()" class="btn btn-outline-primary btn-block">
+              <i class="fas fa-print me-2"></i>
+              Print Receipt
+            </button>
+          </div>
+          <div class="col-md-4 mb-2">
+            {% if payment.purpose == 'Membership' %}
+              <a href="{{ url_for('clubs.view_club', club_id=payment.relatedId) }}" class="btn btn-primary btn-block">
+                <i class="fas fa-users me-2"></i>
+                View Club
+              </a>
+            {% elif payment.purpose == 'Event' %}
+              <a href="{{ url_for('events.view_event', event_id=payment.relatedId) }}" class="btn btn-primary btn-block">
+                <i class="fas fa-calendar me-2"></i>
+                View Event
+              </a>
+            {% else %}
+              <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-primary btn-block">
+                <i class="fas fa-tachometer-alt me-2"></i>
+                Dashboard
+              </a>
+            {% endif %}
+          </div>
+          <div class="col-md-4 mb-2">
+            <a href="{{ url_for('payments.history') }}" class="btn btn-outline-secondary btn-block">
+              <i class="fas fa-history me-2"></i>
+              Payment History
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional Information -->
+      <div class="alert alert-info mt-4">
+        <h6><i class="fas fa-info-circle me-2"></i>What's Next?</h6>
+        <ul class="mb-0">
+          {% if payment.purpose == 'Membership' %}
+            <li>Your club membership payment has been confirmed</li>
+            <li>You can now participate in all club activities</li>
+            <li>Check your club's page for upcoming events and announcements</li>
+          {% elif payment.purpose == 'Event' %}
+            <li>Your event registration is now complete</li>
+            <li>You will receive further details about the event via email</li>
+            <li>Please arrive at the venue on time with a valid ID</li>
+          {% endif %}
+          <li>Keep this receipt for your records</li>
+          <li>Contact support if you have any questions about your payment</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Auto-redirect to dashboard after 30 seconds
+setTimeout(function() {
+  if (confirm('Would you like to return to your dashboard?')) {
+    window.location.href = "{{ url_for('dashboard.dashboard') }}";
+  }
+}, 30000);
+
+// Print functionality
+window.addEventListener('beforeprint', function() {
+  document.title = 'Payment Receipt #{{ payment.paymentId }}';
+});
+</script>
+{% endblock %}

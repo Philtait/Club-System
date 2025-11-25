@@ -1,0 +1,344 @@
+<!-- File: app/templates/payments/membership_payment.html (Fresh version) -->
+{% extends "base.html" %}
+{% block title %}Pay Membership Fee{% endblock %}
+
+{% block extra_head %}
+<style>
+  .payment-card {
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .payment-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  }
+  .btn-pesapal {
+    background: linear-gradient(135deg, #2c5aa0 0%, #1e3f73 100%);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 12px 24px;
+    border-radius: 8px;
+    transition: all 0.3s;
+  }
+  .btn-pesapal:hover {
+    background: linear-gradient(135deg, #1e3f73 0%, #2c5aa0 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(44, 90, 160, 0.3);
+    color: white;
+  }
+  .loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ffffff;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  .modal-header {
+    background: linear-gradient(135deg, #2c5aa0 0%, #1e3f73 100%);
+    color: white;
+    border-radius: 8px 8px 0 0;
+  }
+  .modal-header .btn-close {
+    filter: invert(1);
+  }
+  .form-control:focus {
+    border-color: #2c5aa0;
+    box-shadow: 0 0 0 0.2rem rgba(44, 90, 160, 0.25);
+  }
+  .alert-info {
+    background-color: #e7f3ff;
+    border-color: #b3d7ff;
+    color: #0c5460;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="row">
+    <div class="col-md-10 mx-auto">
+      <div class="text-center mb-5">
+        <h2 class="display-6 fw-bold text-primary">
+          <i class="fas fa-credit-card me-3"></i>
+          Pay Club Membership Fee
+        </h2>
+        <p class="lead text-muted">Secure payment processing with Pesapal</p>
+      </div>
+
+      {% if memberships %}
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle me-2"></i>
+          Select a club below to pay your membership fee using Pesapal's secure payment gateway.
+        </div>
+
+        {% for membership in memberships %}
+        <div class="payment-card">
+          <div class="row align-items-center">
+            <div class="col-lg-8">
+              <div class="d-flex align-items-center">
+                <div class="me-4">
+                  <i class="fas fa-users fa-3x text-primary"></i>
+                </div>
+                <div>
+                  <h4 class="mb-2 text-dark fw-bold">{{ membership.club.name }}</h4>
+                  <p class="text-muted mb-1">
+                    <i class="fas fa-tag me-2"></i>
+                    <strong>Category:</strong> {{ membership.club.category }}
+                  </p>
+                  <p class="text-muted mb-0">
+                    <i class="fas fa-calendar me-2"></i>
+                    <strong>Member since:</strong> {{ membership.joined_on.strftime('%B %d, %Y') }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-4 text-end mt-3 mt-lg-0">
+              <button type="button" 
+                      class="btn btn-pesapal btn-lg w-100"
+                      data-club-id="{{ membership.club.club_id }}"
+                      data-club-name="{{ membership.club.name }}"
+                      onclick="showPaymentModal(this)">
+                <i class="fas fa-lock me-2"></i>
+                Pay with Pesapal
+              </button>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+
+      {% else %}
+        <div class="text-center py-5">
+          <div class="mb-4">
+            <i class="fas fa-exclamation-triangle fa-4x text-warning"></i>
+          </div>
+          <h4 class="text-muted">No Active Memberships</h4>
+          <p class="text-muted mb-4">You don't have any active club memberships to pay for.</p>
+          <a href="{{ url_for('clubs.list_clubs') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-search me-2"></i>
+            Browse Clubs
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Payment Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="paymentModalLabel">
+          <i class="fas fa-credit-card me-2"></i>
+          Complete Membership Payment
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form id="paymentForm">
+          <input type="hidden" id="clubId" name="club_id">
+          <input type="hidden" id="paymentPurpose" name="purpose" value="Membership">
+
+          <!-- Club Info Display -->
+          <div class="alert alert-light border">
+            <div class="row align-items-center">
+              <div class="col-auto">
+                <i class="fas fa-users fa-2x text-primary"></i>
+              </div>
+              <div class="col">
+                <h6 class="mb-1">Selected Club</h6>
+                <p class="mb-0 fw-bold" id="selectedClubName">-</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="customerName" class="form-label fw-bold">
+                  <i class="fas fa-user me-1"></i>
+                  Your Name *
+                </label>
+                <input type="text" 
+                       id="customerName" 
+                       name="customer_name"
+                       class="form-control form-control-lg"
+                       value="{{ current_user.first_name }} {{ current_user.last_name }}"
+                       required>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="phoneNumber" class="form-label fw-bold">
+                  <i class="fas fa-phone me-1"></i>
+                  Phone Number *
+                </label>
+                <input type="tel" 
+                       id="phoneNumber" 
+                       name="phone_number"
+                       class="form-control form-control-lg"
+                       placeholder="e.g. 0712345678"
+                       value="{{ current_user.phone or '' }}"
+                       required>
+                <div class="form-text">Format: 254XXXXXXXXX</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label for="paymentAmount" class="form-label fw-bold">
+              <i class="fas fa-money-bill me-1"></i>
+              Amount (KES) *
+            </label>
+            <div class="input-group input-group-lg">
+              <span class="input-group-text">KES</span>
+              <input type="number" 
+                     id="paymentAmount" 
+                     name="amount"
+                     class="form-control"
+                     min="1"
+                     step="0.01"
+                     placeholder="1000.00"
+                     required>
+            </div>
+          </div>
+
+          <div class="d-grid gap-2">
+            <button type="submit" id="submitPayment" class="btn btn-pesapal btn-lg">
+              <i class="fas fa-shield-alt me-2"></i>
+              Proceed to Secure Payment
+            </button>
+            
+            <button type="button" id="loadingPayment" class="btn btn-secondary btn-lg d-none" disabled>
+              <span class="loading-spinner me-2"></span>
+              Processing Payment...
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Global variables
+let selectedClubId = null;
+let selectedClubName = null;
+
+// Show payment modal function
+function showPaymentModal(buttonElement) {
+  const clubId = buttonElement.getAttribute('data-club-id');
+  const clubName = buttonElement.getAttribute('data-club-name');
+  
+  console.log('Opening payment modal for:', clubId, clubName);
+  
+  selectedClubId = clubId;
+  selectedClubName = clubName;
+
+  // Set form values
+  document.getElementById('clubId').value = clubId;
+  document.getElementById('selectedClubName').textContent = clubName;
+
+  // Reset form state
+  resetFormState();
+
+  // Show the modal
+  const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
+  modal.show();
+}
+
+// Reset form to initial state
+function resetFormState() {
+  document.getElementById('submitPayment').classList.remove('d-none');
+  document.getElementById('loadingPayment').classList.add('d-none');
+}
+
+
+// Phone number formatting
+document.addEventListener('DOMContentLoaded', function() {
+  // Handle form submission
+  document.getElementById('paymentForm').addEventListener('submit', handlePaymentSubmission);
+});
+
+// Handle payment form submission
+async function handlePaymentSubmission(e) {
+  e.preventDefault();
+  
+  const formData = new FormData(e.target);
+  const payload = {
+    purpose: 'Membership',
+    related_id: parseInt(formData.get('club_id')),
+    amount: parseFloat(formData.get('amount')),
+    customer_name: formData.get('customer_name'),
+    phone_number: formData.get('phone_number')
+  };
+
+  console.log('Payment payload:', payload);
+
+  // Validate amount
+  if (payload.amount < 1) {
+    alert('Please enter a valid amount (minimum KES 1.00)');
+    return;
+  }
+
+  // Show loading state
+  showLoadingState();
+
+  try {
+    const response = await fetch('/payments/initiate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCSRFToken()
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+    console.log('Payment response:', data);
+
+    if (data.success) {
+      // Redirect to iframe page
+      window.location.href = `/payments/iframe/${data.payment_id}`;
+    } else {
+      throw new Error(data.error || 'Failed to initiate payment');
+    }
+  } catch (error) {
+    console.error('Payment error:', error);
+    alert('An error occurred: ' + error.message);
+    resetFormState();
+  }
+}
+
+// Show loading state
+function showLoadingState() {
+  document.getElementById('submitPayment').classList.add('d-none');
+  document.getElementById('loadingPayment').classList.remove('d-none');
+}
+
+// Get CSRF token
+function getCSRFToken() {
+  const token = document.querySelector('meta[name=csrf-token]');
+  return token ? token.getAttribute('content') : '';
+}
+
+// Handle modal close events
+document.getElementById('paymentModal').addEventListener('hidden.bs.modal', function () {
+  resetFormState();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Submit Feedback | {{ event.title }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <h2>Feedback for "{{ event.title }}"</h2>
+  <p class="text-muted">Held on {{ event.event_date.strftime('%b %d, %Y') }}</p>
+
+  <form method="POST" action="{{ url_for('feedback.submit_feedback', event_id=event.event_id) }}" novalidate>
+    {{ form.csrf_token }}
+
+    <div class="mb-3">
+      <label class="form-label">Rating (1–5)</label>
+      {{ form.rating(class="form-control" + (' is-invalid' if form.rating.errors else '')) }}
+      {% for err in form.rating.errors %}
+        <div class="invalid-feedback">{{ err }}</div>
+      {% endfor %}
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Comments</label>
+      {{ form.comments(class="form-control", rows="4") }}
+      {% for err in form.comments.errors %}
+        <div class="invalid-feedback">{{ err }}</div>
+      {% endfor %}
+    </div>
+
+    <div class="d-grid">
+      {{ form.submit(class="btn btn-primary") }}
+    </div>
+  </form>
+
+  <div class="mt-3">
+    <a href="{{ url_for('events.view_event', event_id=event.event_id) }}" class="btn btn-outline-secondary">
+      Back to Event
+    </a>
+  </div>
+</div>
+{% endblock %}

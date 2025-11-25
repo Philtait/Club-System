@@ -1,0 +1,48 @@
+<!-- File: app/templates/profile.html -->
+{% extends "base.html" %}
+{% block title %}Profile | Club Management System{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="row">
+    <!-- Profile Picture & Basic Info -->
+    <div class="col-md-4 text-center">
+      <img src="{{ url_for('static', filename=user.profile_image or 'images/default-profile.png') }}"
+           class="rounded-circle mb-3" width="150" height="150" alt="Profile Image">
+      <h4>{{ user.first_name }} {{ user.last_name }}</h4>
+      <p class="text-muted text-capitalize">{{ user.role }}</p>
+    </div>
+
+    <!-- Detailed Info -->
+    <div class="col-md-8">
+      <h5>Account Details</h5>
+      <ul class="list-group mb-3">
+        <li class="list-group-item"><strong>Email:</strong> {{ user.email }}</li>
+        <li class="list-group-item"><strong>Phone:</strong> {{ user.phone or 'N/A' }}</li>
+      </ul>
+
+      {% if user.role == 'Student' %}
+      <h5>Student Details</h5>
+      <ul class="list-group mb-3">
+        <li class="list-group-item"><strong>School:</strong> {{ user.student.school or 'N/A' }}</li>
+        <li class="list-group-item"><strong>Program:</strong> {{ user.student.program or 'N/A' }}</li>
+        <li class="list-group-item"><strong>Year of Study:</strong> {{ user.student.year_of_study or 'N/A' }}</li>
+        <li class="list-group-item"><strong>Expected Graduation:</strong> {{ user.student.expected_graduation_year or 'N/A' }}</li>
+        <li class="list-group-item"><strong>Interests:</strong> {{ user.student.interests or 'N/A' }}</li>
+      </ul>
+      {% elif user.role == 'Admin' %}
+      <h5>Admin Details</h5>
+      <ul class="list-group mb-3">
+        <li class="list-group-item"><strong>Staff ID:</strong> {{ user.admin.staff_id }}</li>
+        <li class="list-group-item"><strong>Department:</strong> {{ user.admin.department_name or 'N/A' }}</li>
+      </ul>
+      {% endif %}
+
+      <div class="btn-group">
+        <a href="{{ url_for('profile.edit_profile') }}" class="btn btn-outline-primary">Edit Profile</a>
+        <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-outline-secondary">Dashboard</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

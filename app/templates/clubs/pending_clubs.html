@@ -1,0 +1,494 @@
+<!-- File: app/templates/clubs/pending_clubs.html -->
+{% extends "base.html" %}
+{% block title %}Pending Club Requests | Club Management System{% endblock %}
+
+{% block extra_head %}
+<style>
+  .pending-wrapper {
+    background: #f8fafc;
+    min-height: calc(100vh - 120px);
+    padding: 40px 0;
+  }
+
+  .page-header {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 32px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .page-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+  }
+
+  .header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .header-info h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .header-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+  }
+
+  .header-info p {
+    color: #64748b;
+    font-size: 16px;
+    margin: 0;
+  }
+
+  .stats-badge {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .pending-grid {
+    display: grid;
+    gap: 20px;
+  }
+
+  .club-request-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .club-request-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+  }
+
+  .club-request-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+  }
+
+  .card-content {
+    padding: 24px;
+  }
+
+  .card-header-section {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .club-info {
+    flex-grow: 1;
+  }
+
+  .club-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+
+  .club-category {
+    display: inline-block;
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+  }
+
+  .club-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 14px;
+    color: #64748b;
+    margin-bottom: 16px;
+  }
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .club-preview {
+    color: #475569;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .urgency-indicator {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #f59e0b;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .card-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-view {
+    background: #f8fafc;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-view:hover {
+    background: #f1f5f9;
+    color: #475569;
+    transform: translateY(-1px);
+  }
+
+  .btn-approve {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-approve::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .btn-approve:hover::before {
+    left: 100%;
+  }
+
+  .btn-approve:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
+  }
+
+  .btn-reject {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-reject::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .btn-reject:hover::before {
+    left: 100%;
+  }
+
+  .btn-reject:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.3);
+  }
+
+  .action-form {
+    display: inline;
+  }
+
+  .empty-state {
+    background: white;
+    border-radius: 16px;
+    padding: 60px 20px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+  }
+
+  .empty-state i {
+    font-size: 4rem;
+    color: #cbd5e1;
+    margin-bottom: 20px;
+  }
+
+  .empty-state h3 {
+    color: #475569;
+    margin-bottom: 12px;
+    font-size: 1.5rem;
+  }
+
+  .empty-state p {
+    color: #64748b;
+    margin: 0;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+  }
+
+  .priority-high {
+    border-left: 4px solid #ef4444;
+  }
+
+  .priority-medium {
+    border-left: 4px solid #f59e0b;
+  }
+
+  .priority-normal {
+    border-left: 4px solid #10b981;
+  }
+
+  .days-indicator {
+    font-size: 12px;
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+  }
+
+  .days-urgent {
+    background: #fef2f2;
+    color: #ef4444;
+  }
+
+  .days-warning {
+    background: #fffbeb;
+    color: #f59e0b;
+  }
+
+  /* Mobile Responsiveness */
+  @media (max-width: 768px) {
+    .pending-wrapper {
+      padding: 20px 0;
+    }
+
+    .page-header {
+      padding: 24px 20px;
+      margin-bottom: 24px;
+    }
+
+    .header-content {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .header-info h1 {
+      font-size: 1.5rem;
+    }
+
+    .card-content {
+      padding: 20px;
+    }
+
+    .card-header-section {
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .card-actions {
+      justify-content: flex-start;
+    }
+
+    .club-meta {
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pending-wrapper">
+  <div class="container">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="header-content">
+        <div class="header-info">
+          <h1>
+            <div class="header-icon">
+              <i class="fas fa-hourglass-half"></i>
+            </div>
+            Pending Club Requests
+          </h1>
+          <p>Review and approve new club applications from students</p>
+        </div>
+        {% if clubs %}
+        <div class="stats-badge">
+          <i class="fas fa-clock"></i>
+          {{ clubs|length }} request{{ 's' if clubs|length != 1 else '' }} waiting
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Pending Clubs Grid -->
+    {% if clubs %}
+    <div class="pending-grid">
+      {% for club in clubs %}
+      <div class="club-request-card">
+        <div class="urgency-indicator"></div>
+        <div class="card-content">
+          <div class="card-header-section">
+            <div class="club-info">
+              <h3 class="club-name">{{ club.name }}</h3>
+              <div class="club-category">{{ club.category }}</div>
+              <div class="club-meta">
+                <div class="meta-item">
+                  <i class="fas fa-calendar-plus"></i>
+                  <span>Requested {{ club.created_at.strftime('%b %d, %Y') if club.created_at else 'Unknown' }}</span>
+                </div>
+                <div class="meta-item">
+                  <span class="days-indicator">
+                    {{ club.created_at.strftime('%I:%M %p') if club.created_at else 'Unknown time' }}
+                  </span>
+                </div>
+              </div>
+              {% if club.objectives %}
+              <div class="club-preview">{{ club.objectives[:120] }}{% if club.objectives|length > 120 %}...{% endif %}</div>
+              {% elif club.description %}
+              <div class="club-preview">{{ club.description[:120] }}{% if club.description|length > 120 %}...{% endif %}</div>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="card-actions">
+            <a href="{{ url_for('clubs.view_club', club_id=club.club_id) }}"
+               class="btn-view">
+              <i class="fas fa-eye"></i>
+              Review Details
+            </a>
+            
+            <form method="POST"
+                  action="{{ url_for('admin.approve_club', club_id=club.club_id) }}"
+                  class="action-form"
+                  onsubmit="return confirm('Approve {{ club.name }}? This will make the club immediately available to students.')">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn-approve">
+                <i class="fas fa-check"></i>
+                Approve
+              </button>
+            </form>
+            
+            <form method="POST"
+                  action="{{ url_for('admin.reject_club', club_id=club.club_id) }}"
+                  class="action-form"
+                  onsubmit="return confirm('Reject {{ club.name }}? This action cannot be undone and will delete the club request.')">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn-reject">
+                <i class="fas fa-times"></i>
+                Reject
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <i class="fas fa-check-circle"></i>
+      <h3>All Caught Up!</h3>
+      <p>There are no pending club requests at this time. All submitted applications have been reviewed and processed.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

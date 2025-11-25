@@ -1,0 +1,109 @@
+<!-- File: app/templates/events/create_event.html -->
+{% extends "base.html" %}
+{% block title %}Create Event{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <h2>Create New Event</h2>
+
+  <form method="POST"
+        action="{{ url_for('events.create_event') }}"
+        enctype="multipart/form-data"
+        novalidate>
+    {{ form.csrf_token }}
+
+    <!-- Club Selector -->
+    <div class="mb-3">
+      {{ form.club_id.label(class="form-label") }}
+      {{ form.club_id(
+           class="form-select" + (" is-invalid" if form.club_id.errors else "")
+         ) }}
+      {% for err in form.club_id.errors %}
+        <div class="invalid-feedback">{{ err }}</div>
+      {% endfor %}
+    </div>
+
+    <!-- Title -->
+    <div class="mb-3">
+      {{ form.title.label(class="form-label") }}
+      {{ form.title(
+           class="form-control" + (" is-invalid" if form.title.errors else "")
+         ) }}
+      {% for err in form.title.errors %}
+        <div class="invalid-feedback">{{ err }}</div>
+      {% endfor %}
+    </div>
+
+    <!-- Description -->
+    <div class="mb-3">
+      {{ form.description.label(class="form-label") }}
+      {{ form.description(
+           class="form-control" + (" is-invalid" if form.description.errors else ""),
+           rows=4
+         ) }}
+      {% for err in form.description.errors %}
+        <div class="invalid-feedback">{{ err }}</div>
+      {% endfor %}
+    </div>
+
+    <!-- Location -->
+    <div class="mb-3">
+      {{ form.location.label(class="form-label") }}
+      {{ form.location(
+           class="form-control" + (" is-invalid" if form.location.errors else "")
+         ) }}
+      {% for err in form.location.errors %}
+        <div class="invalid-feedback">{{ err }}</div>
+      {% endfor %}
+    </div>
+
+    <!-- Dates -->
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        {{ form.event_date.label(class="form-label") }}
+        {{ form.event_date(
+             class="form-control" + (" is-invalid" if form.event_date.errors else "")
+           ) }}
+        {% for err in form.event_date.errors %}
+          <div class="invalid-feedback">{{ err }}</div>
+        {% endfor %}
+      </div>
+      <div class="col-md-6">
+        {{ form.registration_deadline.label(class="form-label") }}
+        {{ form.registration_deadline(
+             class="form-control" + (" is-invalid" if form.registration_deadline.errors else ""),
+           ) }}
+        {% for err in form.registration_deadline.errors %}
+          <div class="invalid-feedback">{{ err }}</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Max Attendees -->
+    <div class="mb-3">
+      {{ form.max_attendees.label(class="form-label") }}
+      {{ form.max_attendees(
+           class="form-select" + (" is-invalid" if form.max_attendees.errors else "")
+         ) }}
+      {% for err in form.max_attendees.errors %}
+        <div class="invalid-feedback">{{ err }}</div>
+      {% endfor %}
+    </div>
+
+    <!-- Image Upload -->
+    <div class="mb-4">
+      {{ form.image_url.label(class="form-label") }}
+      {{ form.image_url(
+           class="form-control" + (" is-invalid" if form.image_url.errors else "")
+         ) }}
+      {% for err in form.image_url.errors %}
+        <div class="invalid-feedback">{{ err }}</div>
+      {% endfor %}
+    </div>
+
+    <div class="d-grid">
+      {{ form.submit(class="btn btn-primary btn-lg") }}
+    </div>
+  </form>
+</div>
+{% endblock %}

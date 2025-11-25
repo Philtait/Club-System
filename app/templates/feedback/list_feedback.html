@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Your Feedback{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <h2>Your Feedback Submissions</h2>
+  
+  {% if feedbacks %}
+    <div class="list-group">
+      {% for fb in feedbacks %}
+      <div class="list-group-item">
+        <div class="d-flex justify-content-between">
+          <div>
+            <h5>Feedback for {{ fb.event.title }}</h5>
+            <strong>Rating:</strong> {{ fb.rating }}/5
+          </div>
+          <small class="text-muted">
+            {{ fb.submitted_on.strftime('%b %d, %Y %I:%M %p') }}
+          </small>
+        </div>
+        <p class="mt-2">{{ fb.comments }}</p>
+        <div>
+          <a href="{{ url_for('feedback.list_feedback', event_id=fb.event_id) }}" 
+             class="btn btn-sm btn-outline-primary">
+            View Event Feedback
+          </a>
+          <form method="POST" action="{{ url_for('feedback.delete_feedback', fb_id=fb.feedback_id) }}" 
+                class="d-inline">
+            <button type="submit" class="btn btn-sm btn-outline-danger">
+              Delete
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>You haven't submitted any feedback yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

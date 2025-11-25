@@ -1,0 +1,107 @@
+/* File: static/css/dashboard.css */
+
+/* Dashboard Stats Cards */
+.stats-card {
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+.stats-card:hover {
+  transform: translateY(-5px);
+}
+
+.stats-card .card-body {
+  padding: 1.5rem;
+}
+
+.stats-card .display-6 {
+  font-weight: 700;
+  margin: 0.5rem 0;
+}
+
+/* Dashboard Tables */
+.dashboard-table {
+  width: 100%;
+}
+
+.dashboard-table th {
+  font-weight: 600;
+  background-color: #f8f9fa;
+}
+
+.dashboard-table td,
+.dashboard-table th {
+  padding: 0.75rem;
+  vertical-align: middle;
+}
+
+/* Activity Feed */
+.activity-item {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-item .activity-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #e9f5ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1rem;
+  color: #0066cc;
+}
+
+/* Quick Actions */
+.quick-actions .btn {
+  min-width: 180px;
+  margin: 0.25rem;
+}
+
+/* Profile Image */
+.profile-img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border: 4px solid white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Tab Navigation */
+.nav-tabs .nav-link {
+  color: #495057;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+}
+
+.nav-tabs .nav-link.active {
+  color: #0066cc;
+  border-bottom: 3px solid #0066cc;
+  background-color: transparent;
+}
+
+/* Form Sections */
+.form-section {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.form-section h5 {
+  margin-bottom: 1.5rem;
+  color: #0066cc;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+  .dashboard-sidebar {
+    margin-top: 2rem;
+  }
+}

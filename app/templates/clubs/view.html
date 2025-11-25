@@ -1,0 +1,794 @@
+<!-- File: app/templates/clubs/view.html -->
+{% extends "base.html" %}
+{% block title %}{{ club.name }} | Club Details{% endblock %}
+
+{% block extra_head %}
+<style>
+  .club-view-wrapper {
+    background: #f8fafc;
+    min-height: calc(100vh - 120px);
+    padding: 40px 0;
+  }
+
+  .club-hero {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    margin-bottom: 32px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .club-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+  }
+
+  .club-logo {
+    width: 120px;
+    height: 120px;
+    border-radius: 16px;
+    object-fit: cover;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    border: 4px solid white;
+    margin-bottom: 24px;
+  }
+
+  .club-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+
+  .club-category {
+    display: inline-block;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 24px;
+  }
+
+  .club-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+  }
+
+  .btn-primary-gradient {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-primary-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+    color: white;
+  }
+
+  .btn-danger-gradient {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-danger-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+    color: white;
+  }
+
+  .btn-secondary-outline {
+    background: white;
+    color: #64748b;
+    border: 2px solid #e2e8f0;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-secondary-outline:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #475569;
+    transform: translateY(-1px);
+  }
+
+  .btn-pending {
+    background: #f59e0b;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: not-allowed;
+    opacity: 0.8;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .content-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 32px;
+    margin-bottom: 32px;
+  }
+
+  .content-card {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+    height: fit-content;
+  }
+
+  .content-section {
+    margin-bottom: 32px;
+  }
+
+  .content-section:last-child {
+    margin-bottom: 0;
+  }
+
+  .section-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-icon {
+    width: 24px;
+    height: 24px;
+    background: #3b82f6;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+  }
+
+  .section-content {
+    color: #475569;
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  .info-grid {
+    display: grid;
+    gap: 16px;
+  }
+
+  .info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #f1f5f9;
+  }
+
+  .info-icon {
+    width: 20px;
+    height: 20px;
+    background: #3b82f6;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 10px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .info-content {
+    flex-grow: 1;
+  }
+
+  .info-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .info-value {
+    color: #1e293b;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .social-links {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .social-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    color: #64748b;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  .social-link:hover {
+    background: #f1f5f9;
+    color: #3b82f6;
+    transform: translateY(-1px);
+  }
+
+  .leaders-list {
+    display: grid;
+    gap: 12px;
+  }
+
+  .leader-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #f8fafc;
+    border-radius: 10px;
+    border: 1px solid #f1f5f9;
+  }
+
+  .leader-avatar {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .leader-info {
+    flex-grow: 1;
+  }
+
+  .leader-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 2px;
+  }
+
+  .leader-position {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 500;
+  }
+
+  .gallery-section {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+  }
+
+  .gallery-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .gallery-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .upload-form {
+    display: flex;
+    gap: 12px;
+    align-items: end;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px dashed #cbd5e1;
+  }
+
+  .form-group-inline {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-group-inline label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .form-control-sm {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    background: white;
+    transition: all 0.2s ease;
+  }
+
+  .form-control-sm:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  .btn-upload {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-upload:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+  }
+
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+  }
+
+  .gallery-item {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+    transition: all 0.3s ease;
+  }
+
+  .gallery-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+  }
+
+  .gallery-image {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .gallery-item:hover .gallery-image {
+    transform: scale(1.05);
+  }
+
+  .gallery-caption {
+    padding: 12px;
+    font-size: 13px;
+    color: #64748b;
+    line-height: 1.4;
+  }
+
+  .empty-gallery {
+    text-align: center;
+    padding: 40px 20px;
+    color: #64748b;
+  }
+
+  .empty-gallery i {
+    font-size: 3rem;
+    color: #cbd5e1;
+    margin-bottom: 16px;
+  }
+
+  .empty-gallery h4 {
+    color: #475569;
+    margin-bottom: 8px;
+  }
+
+  /* Mobile Responsiveness */
+  @media (max-width: 768px) {
+    .club-view-wrapper {
+      padding: 20px 0;
+    }
+
+    .club-hero {
+      padding: 24px 20px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .club-title {
+      font-size: 1.8rem;
+    }
+
+    .club-logo {
+      width: 100px;
+      height: 100px;
+    }
+
+    .content-grid {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    .content-card {
+      padding: 24px 20px;
+    }
+
+    .gallery-section {
+      padding: 24px 20px;
+    }
+
+    .upload-form {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .gallery-grid {
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 16px;
+    }
+
+    .club-actions {
+      justify-content: center;
+    }
+
+    .gallery-header {
+      flex-direction: column;
+      gap: 16px;
+      text-align: center;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="club-view-wrapper">
+  <div class="container">
+    <!-- Club Hero Section -->
+    <div class="club-hero">
+      <div class="row align-items-center">
+        <div class="col-md-3 text-center">
+          <img src="{{ url_for('static', filename=club.logo_url or 'images/default-club.jpg') }}"
+               alt="{{ club.name }} Logo"
+               class="club-logo">
+        </div>
+        <div class="col-md-9">
+          <h1 class="club-title">{{ club.name }}</h1>
+          <div class="club-category">{{ club.category }}</div>
+          
+          <!-- Action Buttons -->
+          <div class="club-actions">
+            {% if current_user.is_authenticated and current_user.role == 'Student' %}
+              {% if is_member %}
+                <!-- Member Actions -->
+                {% set user_membership = current_user.student.memberships | selectattr('club_id', 'equalto', club.club_id) | selectattr('status', 'equalto', 'Approved') | selectattr('left_on', 'none') | first %}
+                {% if user_membership %}
+                <a href="{{ url_for('clubs.club_payment_page', club_id=club.club_id) }}"
+                   class="btn-primary-gradient">
+                  <i class="fas fa-credit-card"></i>Pay Membership Fee
+                </a>
+                {% endif %}
+                
+                <form method="POST" action="{{ url_for('membership.leave_club', club_id=club.club_id) }}" style="display: inline;">
+                  {{ membership_form.csrf_token }}
+                  <button type="submit" class="btn-danger-gradient">
+                    <i class="fas fa-sign-out-alt"></i>Leave Club
+                  </button>
+                </form>
+
+              {% elif is_pending %}
+                <button class="btn-pending" disabled>
+                  <i class="fas fa-clock"></i>Request Pending
+                </button>
+
+              {% else %}
+                <form method="POST" action="{{ url_for('membership.join_club', club_id=club.club_id) }}" style="display: inline;">
+                  {{ membership_form.csrf_token }}
+                  <button type="submit" class="btn-primary-gradient">
+                    <i class="fas fa-user-plus"></i>Join Club
+                  </button>
+                </form>
+              {% endif %}
+            {% endif %}
+
+            {% if current_user.role == 'Admin' %}
+              <a href="{{ url_for('clubs.manage_leaders', club_id=club.club_id) }}"
+                 class="btn-secondary-outline">
+                <i class="fas fa-users-cog"></i>Manage Leaders
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content Grid -->
+    <div class="content-grid">
+      <!-- Main Content -->
+      <div class="content-card">
+        <!-- Objectives -->
+        {% if club.objectives %}
+        <div class="content-section">
+          <h3 class="section-title">
+            <div class="section-icon">
+              <i class="fas fa-bullseye"></i>
+            </div>
+            Objectives
+          </h3>
+          <div class="section-content">{{ club.objectives }}</div>
+        </div>
+        {% endif %}
+
+        <!-- Description -->
+        {% if club.description %}
+        <div class="content-section">
+          <h3 class="section-title">
+            <div class="section-icon">
+              <i class="fas fa-info-circle"></i>
+            </div>
+            About This Club
+          </h3>
+          <div class="section-content">{{ club.description }}</div>
+        </div>
+        {% endif %}
+
+        <!-- Vision Statement -->
+        {% if club.vision_statement %}
+        <div class="content-section">
+          <h3 class="section-title">
+            <div class="section-icon">
+              <i class="fas fa-eye"></i>
+            </div>
+            Our Vision
+          </h3>
+          <div class="section-content">{{ club.vision_statement }}</div>
+        </div>
+        {% endif %}
+
+        <!-- Past Milestones -->
+        {% if club.past_milestones %}
+        <div class="content-section">
+          <h3 class="section-title">
+            <div class="section-icon">
+              <i class="fas fa-trophy"></i>
+            </div>
+            Achievements
+          </h3>
+          <div class="section-content">{{ club.past_milestones }}</div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Sidebar -->
+      <div class="content-card">
+        <!-- Club Info -->
+        <div class="content-section">
+          <h3 class="section-title">
+            <div class="section-icon">
+              <i class="fas fa-info"></i>
+            </div>
+            Club Information
+          </h3>
+          <div class="info-grid">
+            {% if club.meeting_schedule %}
+            <div class="info-item">
+              <div class="info-icon">
+                <i class="fas fa-calendar"></i>
+              </div>
+              <div class="info-content">
+                <div class="info-label">Meeting Schedule</div>
+                <div class="info-value">{{ club.meeting_schedule }}</div>
+              </div>
+            </div>
+            {% endif %}
+
+            {% if club.location %}
+            <div class="info-item">
+              <div class="info-icon">
+                <i class="fas fa-map-marker-alt"></i>
+              </div>
+              <div class="info-content">
+                <div class="info-label">Location</div>
+                <div class="info-value">{{ club.location }}</div>
+              </div>
+            </div>
+            {% endif %}
+
+            <div class="info-item">
+              <div class="info-icon">
+                <i class="fas fa-calendar-plus"></i>
+              </div>
+              <div class="info-content">
+                <div class="info-label">Established</div>
+                <div class="info-value">{{ club.created_at.strftime('%B %Y') if club.created_at else 'Unknown' }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Social Media -->
+        {% if club.social_media_handles %}
+        <div class="content-section">
+          <h3 class="section-title">
+            <div class="section-icon">
+              <i class="fas fa-share-alt"></i>
+            </div>
+            Follow Us
+          </h3>
+          <div class="social-links">
+            {% if club.social_media_handles.instagram %}
+            <a href="https://instagram.com/{{ club.social_media_handles.instagram }}"
+               target="_blank" class="social-link">
+              <i class="fab fa-instagram"></i>
+              {{ club.social_media_handles.instagram }}
+            </a>
+            {% endif %}
+            {% if club.social_media_handles.twitter %}
+            <a href="https://twitter.com/{{ club.social_media_handles.twitter }}"
+               target="_blank" class="social-link">
+              <i class="fab fa-twitter"></i>
+              {{ club.social_media_handles.twitter }}
+            </a>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Club Leaders -->
+        {% if leaders %}
+        <div class="content-section">
+          <h3 class="section-title">
+            <div class="section-icon">
+              <i class="fas fa-crown"></i>
+            </div>
+            Leadership Team
+          </h3>
+          <div class="leaders-list">
+            {% for lead in leaders %}
+            <div class="leader-item">
+              <div class="leader-avatar">
+                {{ lead.user.first_name[0] }}{{ lead.user.last_name[0] }}
+              </div>
+              <div class="leader-info">
+                <div class="leader-name">{{ lead.user.first_name }} {{ lead.user.last_name }}</div>
+                <div class="leader-position">{{ lead.position.replace("MembershipCoordinator","Membership Coordinator").replace("VicePresident","Vice President") }}</div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Gallery Section -->
+    <div class="gallery-section">
+      <div class="gallery-header">
+        <h3 class="gallery-title">
+          <div class="section-icon">
+            <i class="fas fa-images"></i>
+          </div>
+          Photo Gallery
+        </h3>
+      </div>
+
+      <!-- Upload Form (for admins and club leaders) -->
+      {% if current_user.role in ['Admin'] or (current_user.role=='ClubLeader' and leaders|selectattr("user_id","equalto",current_user.user_id)|list) %}
+      <form method="POST"
+            action="{{ url_for('clubs.upload_gallery', club_id=club.club_id) }}"
+            enctype="multipart/form-data"
+            class="upload-form">
+        {{ gallery_form.csrf_token }}
+        
+        <div class="form-group-inline">
+          <label>Select Image</label>
+          {{ gallery_form.image_file(class="form-control-sm") }}
+        </div>
+        
+        <div class="form-group-inline">
+          <label>Caption (Optional)</label>
+          {{ gallery_form.caption(class="form-control-sm", placeholder="Describe this image...") }}
+        </div>
+        
+        <div class="form-group-inline">
+          <label>&nbsp;</label>
+          {{ gallery_form.submit(class="btn-upload") }}
+        </div>
+      </form>
+      {% endif %}
+
+      <!-- Gallery Grid -->
+      {% if gallery %}
+      <div class="gallery-grid">
+        {% for img in gallery %}
+        <div class="gallery-item">
+          <img src="{{ url_for('static', filename=img.image_url) }}"
+               class="gallery-image" 
+               alt="{{ img.caption or 'Club gallery image' }}">
+          {% if img.caption %}
+          <div class="gallery-caption">{{ img.caption }}</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-gallery">
+        <i class="fas fa-images"></i>
+        <h4>No Photos Yet</h4>
+        <p>Photos shared by the club will appear here.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

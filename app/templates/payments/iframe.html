@@ -1,0 +1,169 @@
+<!-- File: app/templates/payments/iframe.html (Updated - Replace existing) -->
+{% extends "base.html" %}
+{% block title %}Complete Payment{% endblock %}
+
+{% block extra_head %}
+<style>
+  .payment-iframe {
+    width: 100%;
+    height: 600px;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  .payment-container {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  .payment-header {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+  }
+  @media (max-width: 768px) {
+    .payment-iframe {
+      height: 500px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="payment-container">
+    <div class="payment-header text-center">
+      <h3 class="mb-2">
+        <i class="fas fa-credit-card me-2"></i>
+        Complete Your Payment
+      </h3>
+      <p class="text-muted mb-0">
+        {% if payment.purpose == 'Membership' %}
+          Club Membership Payment - KES {{ "{:,.2f}".format(payment.amount) }}
+        {% elif payment.purpose == 'Event' %}
+          Event Registration Payment - KES {{ "{:,.2f}".format(payment.amount) }}
+        {% else %}
+          Payment - KES {{ "{:,.2f}".format(payment.amount) }}
+        {% endif %}
+      </p>
+    </div>
+
+    <div class="alert alert-info">
+      <i class="fas fa-info-circle me-2"></i>
+      Complete your payment securely through Pesapal. You will be redirected back automatically after payment completion.
+    </div>
+
+    <!-- Pesapal Payment Iframe -->
+    <div class="iframe-container">
+      <iframe id="payment-iframe" 
+              class="payment-iframe" 
+              src="{{ iframe_src }}"
+              title="Pesapal Payment">
+        <p>Your browser does not support iframes. Please update your browser or contact support.</p>
+      </iframe>
+    </div>
+
+    <!-- Status Check and Actions -->
+    <div class="text-center mt-4">
+      <div class="row">
+        <div class="col-md-4">
+          <button onclick="checkPaymentStatus()" class="btn btn-outline-primary">
+            <i class="fas fa-sync me-2"></i>
+            Check Status
+          </button>
+        </div>
+        <div class="col-md-4">
+          <a href="{{ url_for('payments.history') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-history me-2"></i>
+            Payment History
+          </a>
+        </div>
+        <div class="col-md-4">
+          <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-outline-info">
+            <i class="fas fa-tachometer-alt me-2"></i>
+            Dashboard
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Payment Status Modal -->
+<div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="statusModalLabel">Payment Status</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="statusContent">
+        <!-- Status content will be loaded here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const paymentId = {{ payment.paymentId }};
+
+// Auto-check payment status every 10 seconds
+let statusCheckInterval = setInterval(checkPaymentStatus, 10000);
+
+// Stop checking after 30 minutes
+setTimeout(() => {
+  clearInterval(statusCheckInterval);
+}, 30 * 60 * 1000);
+
+async function checkPaymentStatus() {
+  try {
+    const response = await fetch(`/payments/api/status/${paymentId}`);
+    const data = await response.json();
+
+    if (data.status === 'Completed') {
+      clearInterval(statusCheckInterval);
+      
+      // Show success message and redirect
+      alert('Payment completed successfully!');
+      window.location.href = `/payments/success/${paymentId}`;
+      
+    } else if (data.status === 'Failed') {
+      clearInterval(statusCheckInterval);
+      
+      // Show failure message
+      showStatusModal('Payment Failed', 'Your payment was not successful. Please try again or contact support.');
+      
+    } else if (data.status === 'Pending') {
+      // Payment still pending - continue checking
+      console.log('Payment still pending...');
+    }
+  } catch (error) {
+    console.error('Error checking payment status:', error);
+  }
+}
+
+function showStatusModal(title, message) {
+  document.getElementById('statusModalLabel').textContent = title;
+  document.getElementById('statusContent').innerHTML = `<p>${message}</p>`;
+  new bootstrap.Modal(document.getElementById('statusModal')).show();
+}
+
+// Handle iframe events (if any)
+window.addEventListener('message', function(event) {
+  // Handle any postMessage events from the iframe if needed
+  console.log('Received message from iframe:', event.data);
+});
+
+// Handle page visibility change to check status when user returns
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden) {
+    checkPaymentStatus();
+  }
+});
+</script>
+{% endblock %}

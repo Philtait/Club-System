@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Feedback | {{ event.title }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <h2>Feedback for "{{ event.title }}"</h2>
+  <p class="text-muted">Held on {{ event.event_date.strftime('%b %d, %Y') }}</p>
+
+  {% if feedbacks %}
+    <div class="list-group">
+      {% for fb in feedbacks %}
+      <div class="list-group-item">
+        <div class="d-flex justify-content-between">
+          <div>
+            <strong>Rating:</strong> {{ fb.rating }}/5
+          </div>
+          <small class="text-muted">{{ fb.submitted_on.strftime('%b %d, %Y %I:%M %p') }}</small>
+        </div>
+        <p class="mt-2">{{ fb.message }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>No feedback submitted for this event yet.</p>
+  {% endif %}
+
+  <div class="mt-4">
+    <a href="{{ url_for('events.view_event', event_id=event.event_id) }}" class="btn btn-outline-secondary">
+      Back to Event
+    </a>
+  </div>
+</div>
+{% endblock %}

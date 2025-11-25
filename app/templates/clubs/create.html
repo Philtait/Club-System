@@ -1,0 +1,1015 @@
+<!-- File: app/templates/clubs/create_club.html -->
+{% extends "base.html" %}
+{% block title %}Create New Club | Club Management System{% endblock %}
+
+{% block extra_head %}
+<style>
+  .request-wrapper {
+    background: #f8fafc;
+    min-height: calc(100vh - 120px);
+    padding: 40px 0;
+  }
+
+  .request-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .request-header {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 32px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+    text-align: center;
+  }
+
+  .request-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 8px;
+  }
+
+  .request-subtitle {
+    color: #64748b;
+    font-size: 16px;
+    margin: 0;
+    max-width: 500px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .form-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+    overflow: hidden;
+  }
+
+  .form-progress {
+    background: #f8fafc;
+    padding: 20px 32px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .progress-steps {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    position: relative;
+  }
+
+  .progress-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: 60%;
+    width: 80%;
+    height: 2px;
+    background: #e2e8f0;
+    transition: background 0.3s ease;
+  }
+
+  .progress-step.completed::after {
+    background: #3b82f6;
+  }
+
+  .step-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    transition: all 0.3s ease;
+    z-index: 2;
+    position: relative;
+  }
+
+  .progress-step.active .step-circle {
+    background: #3b82f6;
+    color: white;
+  }
+
+  .progress-step.completed .step-circle {
+    background: #10b981;
+    color: white;
+  }
+
+  .step-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748b;
+    text-align: center;
+  }
+
+  .progress-step.active .step-label {
+    color: #3b82f6;
+  }
+
+  .progress-step.completed .step-label {
+    color: #10b981;
+  }
+
+  .progress-text {
+    text-align: center;
+    color: #64748b;
+    font-size: 14px;
+    margin: 0;
+  }
+
+  .form-body {
+    padding: 32px;
+  }
+
+  .form-section {
+    margin-bottom: 40px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .form-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+
+  .section-header {
+    margin-bottom: 24px;
+  }
+
+  .section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-icon {
+    width: 20px;
+    height: 20px;
+    background: #3b82f6;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+  }
+
+  .section-description {
+    color: #64748b;
+    font-size: 14px;
+    margin: 0;
+  }
+
+  .form-grid {
+    display: grid;
+    gap: 20px;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form-group.full-width {
+    grid-column: 1 / -1;
+  }
+
+  .form-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .required-indicator {
+    color: #ef4444;
+    font-size: 12px;
+  }
+
+  .form-control, .form-textarea {
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 15px;
+    color: #1f2937;
+    background: white;
+    transition: all 0.3s ease;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .form-control:focus, .form-textarea:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  }
+
+  .form-control.is-invalid, .form-textarea.is-invalid {
+    border-color: #ef4444;
+    background: #fef2f2;
+  }
+
+  .form-control.is-invalid:focus, .form-textarea.is-invalid:focus {
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+  }
+
+  .form-textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  .char-counter {
+    font-size: 12px;
+    color: #64748b;
+    text-align: right;
+    margin-top: 4px;
+  }
+
+  .char-counter.near-limit {
+    color: #f59e0b;
+  }
+
+  .char-counter.at-limit {
+    color: #ef4444;
+  }
+
+  .file-upload-area {
+    border: 2px dashed #e2e8f0;
+    border-radius: 8px;
+    padding: 24px;
+    text-align: center;
+    background: #f8fafc;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .file-upload-area:hover {
+    border-color: #3b82f6;
+    background: #f1f5f9;
+  }
+
+  .file-upload-area.dragover {
+    border-color: #3b82f6;
+    background: #dbeafe;
+  }
+
+  .file-upload-icon {
+    width: 48px;
+    height: 48px;
+    background: #3b82f6;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+    margin: 0 auto 12px;
+  }
+
+  .file-upload-text {
+    color: #374151;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+
+  .file-upload-hint {
+    color: #64748b;
+    font-size: 14px;
+    margin: 0;
+  }
+
+  .file-input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+  }
+
+  .file-preview {
+    display: none;
+    margin-top: 16px;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .file-preview.show {
+    display: block;
+  }
+
+  .file-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .file-icon {
+    width: 40px;
+    height: 40px;
+    background: #10b981;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+  }
+
+  .file-details h5 {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+  }
+
+  .file-details p {
+    margin: 0;
+    font-size: 12px;
+    color: #64748b;
+  }
+
+  .file-remove {
+    margin-left: auto;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  .file-remove:hover {
+    background: #dc2626;
+  }
+
+  .invalid-feedback {
+    display: block;
+    color: #ef4444;
+    font-size: 13px;
+    margin-top: 6px;
+  }
+
+  .form-help {
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+
+  .submit-section {
+    background: #f8fafc;
+    border-top: 1px solid #f1f5f9;
+    padding: 32px;
+    margin: 0 -32px -32px;
+  }
+
+  .submit-button {
+    width: 100%;
+    padding: 16px 32px;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .submit-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .submit-button:hover::before {
+    left: 100%;
+  }
+
+  .submit-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+  }
+
+  .submit-button:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .submit-button.loading {
+    pointer-events: none;
+  }
+
+  .submit-button.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid transparent;
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .form-footer {
+    text-align: center;
+    margin-top: 16px;
+  }
+
+  .form-footer a {
+    color: #64748b;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.2s ease;
+  }
+
+  .form-footer a:hover {
+    color: #3b82f6;
+  }
+
+  /* Mobile Responsiveness */
+  @media (max-width: 768px) {
+    .request-wrapper {
+      padding: 20px 0;
+    }
+
+    .request-header {
+      padding: 24px 20px;
+      margin-bottom: 24px;
+    }
+
+    .request-title {
+      font-size: 1.5rem;
+    }
+
+    .form-body {
+      padding: 24px 20px;
+    }
+
+    .form-row {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .progress-steps {
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .progress-step:not(:last-child)::after {
+      display: none;
+    }
+
+    .section-title {
+      font-size: 16px;
+    }
+
+    .submit-section {
+      padding: 24px 20px;
+      margin: 0 -20px -24px;
+    }
+
+    .file-upload-area {
+      padding: 20px;
+    }
+  }
+
+  /* Form validation animations */
+  .form-control.error {
+    animation: shake 0.5s ease-in-out;
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="request-wrapper">
+  <div class="container">
+    <div class="request-container">
+      <!-- Header -->
+      <div class="request-header">
+        <h1 class="request-title">Create a New Club</h1>
+        <p class="request-subtitle">
+          Use your administrative privileges to create and approve a new student club.
+          This club will be immediately available to students.
+        </p>
+      </div>
+
+      <!-- Form Card -->
+      <div class="form-card">
+        <!-- Progress Indicator -->
+        <div class="form-progress">
+          <div class="progress-steps">
+            <div class="progress-step active" data-step="1">
+              <div class="step-circle">1</div>
+              <div class="step-label">Basic Info</div>
+            </div>
+            <div class="progress-step" data-step="2">
+              <div class="step-circle">2</div>
+              <div class="step-label">Details</div>
+            </div>
+            <div class="progress-step" data-step="3">
+              <div class="step-circle">3</div>
+              <div class="step-label">Branding</div>
+            </div>
+            <div class="progress-step" data-step="4">
+              <div class="step-circle">4</div>
+              <div class="step-label">Create</div>
+            </div>
+          </div>
+          <p class="progress-text" id="progressText">Complete the basic information about the club</p>
+        </div>
+
+        <!-- Form Body -->
+        <form method="POST" enctype="multipart/form-data" action="{{ url_for('clubs.create_club') }}" id="clubCreateForm">
+          {{ form.csrf_token }}
+
+          <div class="form-body">
+            <!-- Section 1: Basic Information -->
+            <div class="form-section" data-section="1">
+              <div class="section-header">
+                <h3 class="section-title">
+                  <div class="section-icon">
+                    <i class="fas fa-info"></i>
+                  </div>
+                  Basic Information
+                </h3>
+                <p class="section-description">Define the club's identity and core purpose</p>
+              </div>
+
+              <div class="form-grid">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">
+                      Club Name <span class="required-indicator">*</span>
+                    </label>
+                    {{ form.name(class="form-control", required=true, maxlength="100") }}
+                    <div class="char-counter" data-counter="name">0/100</div>
+                    {% for error in form.name.errors %}
+                      <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">
+                      Category <span class="required-indicator">*</span>
+                    </label>
+                    {{ form.category(class="form-control", required=true, placeholder="e.g., Academic, Sports, Arts") }}
+                    <div class="form-help">Choose a category that best describes the club</div>
+                    {% for error in form.category.errors %}
+                      <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                </div>
+
+                <div class="form-group full-width">
+                  <label class="form-label">
+                    Club Objectives <span class="required-indicator">*</span>
+                  </label>
+                  {{ form.objectives(class="form-textarea", required=true, rows="4", maxlength="500") }}
+                  <div class="char-counter" data-counter="objectives">0/500</div>
+                  <div class="form-help">Describe the main goals and objectives of the club</div>
+                  {% for error in form.objectives.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 2: Detailed Description -->
+            <div class="form-section" data-section="2">
+              <div class="section-header">
+                <h3 class="section-title">
+                  <div class="section-icon">
+                    <i class="fas fa-file-alt"></i>
+                  </div>
+                  Club Details
+                </h3>
+                <p class="section-description">Provide comprehensive information about the club's vision and activities</p>
+              </div>
+
+              <div class="form-grid">
+                <div class="form-group full-width">
+                  <label class="form-label">Description</label>
+                  {{ form.description(class="form-textarea", rows="4", maxlength="1000") }}
+                  <div class="char-counter" data-counter="description">0/1000</div>
+                  <div class="form-help">Provide a detailed description of what the club does</div>
+                  {% for error in form.description.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                  {% endfor %}
+                </div>
+
+                <div class="form-group full-width">
+                  <label class="form-label">Vision Statement</label>
+                  {{ form.vision_statement(class="form-textarea", rows="3", maxlength="300") }}
+                  <div class="char-counter" data-counter="vision_statement">0/300</div>
+                  <div class="form-help">What is the club's long-term vision?</div>
+                  {% for error in form.vision_statement.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                  {% endfor %}
+                </div>
+
+                <div class="form-group full-width">
+                  <label class="form-label">Past Milestones</label>
+                  {{ form.past_milestones(class="form-textarea", rows="3", maxlength="500") }}
+                  <div class="char-counter" data-counter="past_milestones">0/500</div>
+                  <div class="form-help">Share any achievements or milestones (if applicable)</div>
+                  {% for error in form.past_milestones.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 3: Logistics & Branding -->
+            <div class="form-section" data-section="3">
+              <div class="section-header">
+                <h3 class="section-title">
+                  <div class="section-icon">
+                    <i class="fas fa-calendar"></i>
+                  </div>
+                  Logistics & Branding
+                </h3>
+                <p class="section-description">Set up meeting details and social media presence</p>
+              </div>
+
+              <div class="form-grid">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Meeting Schedule</label>
+                    {{ form.meeting_schedule(class="form-control", placeholder="e.g., Every Friday 4PM") }}
+                    <div class="form-help">When will the club meet?</div>
+                    {% for error in form.meeting_schedule.errors %}
+                      <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Location</label>
+                    {{ form.location(class="form-control", placeholder="e.g., Room 204, Main Campus") }}
+                    <div class="form-help">Where will meetings take place?</div>
+                    {% for error in form.location.errors %}
+                      <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Instagram Handle</label>
+                    {{ form.instagram(class="form-control", placeholder="@clubname") }}
+                    <div class="form-help">Optional: Club's Instagram handle</div>
+                    {% for error in form.instagram.errors %}
+                      <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Twitter Handle</label>
+                    {{ form.twitter(class="form-control", placeholder="@clubname") }}
+                    <div class="form-help">Optional: Club's Twitter handle</div>
+                    {% for error in form.twitter.errors %}
+                      <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                </div>
+
+                <div class="form-group full-width">
+                  <label class="form-label">Club Logo</label>
+                  <div class="file-upload-area" onclick="document.getElementById('logo_file').click()">
+                    <div class="file-upload-icon">
+                      <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <p class="file-upload-text">Click to upload club logo</p>
+                    <p class="file-upload-hint">PNG, JPG up to 5MB. Recommended: 300x300px</p>
+                    {{ form.logo_file(class="file-input", accept="image/*", id="logo_file") }}
+                  </div>
+                  <div class="file-preview" id="logoPreview">
+                    <div class="file-info">
+                      <div class="file-icon">
+                        <i class="fas fa-image"></i>
+                      </div>
+                      <div class="file-details">
+                        <h5 id="fileName"></h5>
+                        <p id="fileSize"></p>
+                      </div>
+                      <button type="button" class="file-remove" onclick="removeFile()">
+                        <i class="fas fa-times"></i>
+                      </button>
+                    </div>
+                  </div>
+                  {% for error in form.logo_file.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit Section -->
+          <div class="submit-section">
+            {{ form.submit(class="submit-button", id="submitBtn") }}
+            <div class="form-footer">
+              <a href="{{ url_for('clubs.list_clubs') }}">Cancel and return to clubs</a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+class ClubCreateForm {
+  constructor() {
+    this.form = document.getElementById('clubCreateForm');
+    this.submitButton = document.getElementById('submitBtn');
+    this.fileInput = document.getElementById('logo_file');
+    this.filePreview = document.getElementById('logoPreview');
+
+    this.init();
+  }
+
+  init() {
+    this.setupCharacterCounters();
+    this.setupFileUpload();
+    this.setupFormValidation();
+    this.setupProgressTracking();
+
+    // Form submission
+    this.form.addEventListener('submit', (e) => this.handleSubmit(e));
+  }
+
+  setupCharacterCounters() {
+    const textareas = this.form.querySelectorAll('textarea[maxlength], input[maxlength]');
+
+    textareas.forEach(textarea => {
+      const counter = this.form.querySelector(`[data-counter="${textarea.name}"]`);
+      if (counter) {
+        const updateCounter = () => {
+          const current = textarea.value.length;
+          const max = textarea.getAttribute('maxlength');
+          counter.textContent = `${current}/${max}`;
+
+          // Update counter styling
+          counter.className = 'char-counter';
+          if (current > max * 0.9) {
+            counter.classList.add('near-limit');
+          }
+          if (current >= max) {
+            counter.classList.add('at-limit');
+          }
+        };
+
+        textarea.addEventListener('input', updateCounter);
+        updateCounter(); // Initial count
+      }
+    });
+  }
+
+  setupFileUpload() {
+    const uploadArea = document.querySelector('.file-upload-area');
+
+    // Drag and drop
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
+
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        this.fileInput.files = files;
+        this.handleFileUpload(files[0]);
+      }
+    });
+
+    // File input change
+    this.fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        this.handleFileUpload(e.target.files[0]);
+      }
+    });
+  }
+
+  handleFileUpload(file) {
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      showToast('error', 'Please select an image file (PNG, JPG, etc.)');
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('error', 'File size must be less than 5MB');
+      return;
+    }
+
+    // Show preview
+    document.getElementById('fileName').textContent = file.name;
+    document.getElementById('fileSize').textContent = this.formatFileSize(file.size);
+    this.filePreview.classList.add('show');
+  }
+
+  formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  setupFormValidation() {
+    const requiredFields = this.form.querySelectorAll('[required]');
+
+    requiredFields.forEach(field => {
+      field.addEventListener('blur', () => this.validateField(field));
+      field.addEventListener('input', () => {
+        if (field.classList.contains('is-invalid')) {
+          this.validateField(field);
+        }
+      });
+    });
+  }
+
+  validateField(field) {
+    const isValid = field.checkValidity();
+
+    if (isValid) {
+      field.classList.remove('is-invalid');
+      field.classList.remove('error');
+    } else {
+      field.classList.add('is-invalid');
+      field.classList.add('error');
+    }
+
+    return isValid;
+  }
+
+  setupProgressTracking() {
+    const sections = this.form.querySelectorAll('.form-section');
+    const progressSteps = document.querySelectorAll('.progress-step');
+    const progressText = document.getElementById('progressText');
+
+    const progressTexts = [
+      'Complete the basic information about the club',
+      'Provide detailed description and vision',
+      'Set up logistics and branding',
+      'Review and create the club'
+    ];
+
+    // Track form completion
+    const updateProgress = () => {
+      let completedSections = 0;
+
+      sections.forEach((section, index) => {
+        const requiredFields = section.querySelectorAll('[required]');
+        const filledFields = Array.from(requiredFields).filter(field =>
+          field.value.trim() !== ''
+        );
+
+        if (filledFields.length === requiredFields.length) {
+          completedSections = index + 1;
+        }
+      });
+
+      // Update progress steps
+      progressSteps.forEach((step, index) => {
+        step.classList.remove('active', 'completed');
+
+        if (index < completedSections) {
+          step.classList.add('completed');
+        } else if (index === completedSections) {
+          step.classList.add('active');
+        }
+      });
+
+      // Update progress text
+      const currentStep = Math.min(completedSections, progressTexts.length - 1);
+      progressText.textContent = progressTexts[currentStep];
+    };
+
+    // Listen for form changes
+    this.form.addEventListener('input', updateProgress);
+    this.form.addEventListener('change', updateProgress);
+
+    // Initial progress check
+    updateProgress();
+  }
+
+  handleSubmit(e) {
+    e.preventDefault();
+
+    // Validate all required fields
+    const requiredFields = this.form.querySelectorAll('[required]');
+    let isValid = true;
+
+    requiredFields.forEach(field => {
+      if (!this.validateField(field)) {
+        isValid = false;
+      }
+    });
+
+    if (!isValid) {
+      showToast('error', 'Please fill in all required fields correctly');
+
+      // Focus on first invalid field
+      const firstInvalid = this.form.querySelector('.is-invalid');
+      if (firstInvalid) {
+        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        firstInvalid.focus();
+      }
+      return;
+    }
+
+    // Show loading state
+    this.submitButton.classList.add('loading');
+    this.submitButton.textContent = 'Creating Club...';
+    this.submitButton.disabled = true;
+
+    // Submit form using HTMLFormElement.prototype.submit to avoid conflicts
+    setTimeout(() => {
+      HTMLFormElement.prototype.submit.call(this.form);
+    }, 500); // Small delay for better UX
+  }
+
+  removeFile() {
+    this.fileInput.value = '';
+    this.filePreview.classList.remove('show');
+  }
+}
+
+// Global function for file removal
+function removeFile() {
+  const clubForm = window.clubCreateForm;
+  if (clubForm) {
+    clubForm.removeFile();
+  }
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  window.clubCreateForm = new ClubCreateForm();
+});
+</script>
+{% endblock %}
