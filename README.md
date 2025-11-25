@@ -1,4 +1,4 @@
-# 📚 Club Management System for Strathmore University
+# 📚 A Club Management System for Strathmore University
 
 [![Python](https://img.shields.io/badge/Python-3.8+-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-black?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
