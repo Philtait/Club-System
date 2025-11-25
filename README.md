@@ -15,7 +15,7 @@ This platform simplifies the management of student clubs, event planning, member
 - 📢 Real-time notifications and email alerts
 - 💬 Feedback submission and review
 - 📊 Admin dashboards for club and event monitoring
-- 💳 **M-PESA** integration for membership payments
+- 💳 **Paypal** integration for membership payments
 
 ---
 
@@ -43,10 +43,10 @@ This platform simplifies the management of student clubs, event planning, member
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/Club-Management-System.git
+git clone https://github.com/philtait/Club-Management-System.git
 
 # Navigate to the project directory
-cd Club-Management-System
+cd Club-System
 
 # Create a virtual environment (recommended)
 python -m venv venv
