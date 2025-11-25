@@ -3,7 +3,6 @@
 [![Python](https://img.shields.io/badge/Python-3.8+-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-black?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
 [![MySQL](https://img.shields.io/badge/MySQL-orange?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
-[![PayPal](https://img.shields.io/badge/PayPal-blue?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.com/)
 [![Nginx](https://img.shields.io/badge/Nginx-green?style=for-the-badge&logo=nginx&logoColor=white)](https://www.nginx.com/)
 
 A web-based Club Management System developed as a third-year Computer Science project at **Strathmore University**. This platform simplifies the management of student clubs, event planning, member engagement, and administrative oversight through a centralized, role-based portal.
@@ -53,7 +52,7 @@ The management of student clubs at Strathmore University traditionally relied on
 | **Backend**           | Python, Flask, SQLAlchemy                        |
 | **Frontend**          | HTML, CSS, JavaScript, Jinja2                    |
 | **Database**          | MySQL                                            |
-| **Payment Gateway**   | PayPal                                           |
+| **Payment Gateway**   | PesaPal                                          |
 | **Version Control**   | Git, GitHub                                      |
 | **Design & Diagrams** | Figma, Draw.io                                   |
 
