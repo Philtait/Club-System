@@ -42,9 +42,8 @@ The management of student clubs at Strathmore University traditionally relied on
 
 ## Screenshots
 
-![Homepage Screenshot](<img width="940" height="479" alt="image" src="https://github.com/user-attachments/assets/a2362e95-f264-48f8-964c-f26feb3a81bf" />
-)
-
+*(Homepage of the deployed application)*
+![Homepage Screenshot](https://github.com/user-attachments/assets/875d952b-3dad-4774-9536-a59df25a8e7c)
 ---
 
 ## Technology Stack
@@ -134,7 +133,7 @@ To get a local copy up and running for development purposes, follow these steps.
 
 ## Authors
 
--   **Tait Philip Lemaron** - [Philtait](https://github.com/Philtrait)
+-   **Tait Philip Lemaron** - [Philtait](https://github.com/Philtait)
 -   **Morara Daniel Momanyi**
 
 ## Acknowledgments
