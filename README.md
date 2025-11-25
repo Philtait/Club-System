@@ -42,8 +42,8 @@ The management of student clubs at Strathmore University traditionally relied on
 
 ## Screenshots
 
-*(Homepage of the deployed application)*
-![Homepage Screenshot](./screenshots/homepage.png)
+![Homepage Screenshot](<img width="940" height="479" alt="image" src="https://github.com/user-attachments/assets/a2362e95-f264-48f8-964c-f26feb3a81bf" />
+)
 
 ---
 
@@ -90,7 +90,7 @@ To get a local copy up and running for development purposes, follow these steps.
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/Philtrait/Club-System.git
+    git clone https://github.com/Philtait/Club-System.git
     cd Club-System
     ```
 
