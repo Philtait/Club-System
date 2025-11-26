@@ -118,8 +118,8 @@ To get a local copy up and running for development purposes, follow these steps.
         ```ini
         SECRET_KEY='your-very-secure-random-secret-key-here'
         DATABASE_URL='mysql+pymysql://<db_user>:<db_password>@<db_host>/clubs'
-        PAYPAL_CLIENT_ID='your_paypal_client_id'
-        PAYPAL_CLIENT_SECRET='your_paypal_client_secret'
+        PESAPAL_CLIENT_ID='your_pesapal_client_id'
+        PESAPAL_CLIENT_SECRET='your_pesapal_client_secret'
         ```
 
 6.  **Run the Flask development server:**
